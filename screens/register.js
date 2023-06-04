@@ -11,15 +11,20 @@ import { Ionicons } from "@expo/vector-icons";
 
 const Register = ({ navigation }) => {
   const [name, setName] = useState("");
-  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [validPassword, setValidPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [mobile, setMobile] = useState("");
 
   const handleTogglePassword = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleToggleConfirmPassword = () => {
+    setShowConfirmPassword(!showConfirmPassword);
   };
 
   const styles = StyleSheet.create({
@@ -29,7 +34,7 @@ const Register = ({ navigation }) => {
     },
     containerTitle: {
       width: "100%",
-      height: "20%",
+      height: "15%",
       backgroundColor: "transparent",
       alignItems: "center",
       justifyContent: "center",
@@ -40,7 +45,7 @@ const Register = ({ navigation }) => {
     },
     containerRegister: {
       width: "100%",
-      height: "80%",
+      height: "85%",
       backgroundColor: "white",
       borderTopLeftRadius: 40,
       borderTopRightRadius: 40,
@@ -55,13 +60,14 @@ const Register = ({ navigation }) => {
       paddingBottom: 5,
       width: "80%",
       borderBottomWidth: 1,
+      borderBottomColor: "#7874f2",
     },
     containerInputUsername: {
       paddingTop: 25,
       paddingBottom: 5,
       width: "80%",
       borderBottomWidth: 1,
-      borderBottomColor: username !== "" ? "#7874f2" : "gray",
+      borderBottomColor: "#7874f2",
     },
     containerInputPass: {
       paddingTop: 25,
@@ -165,7 +171,7 @@ const Register = ({ navigation }) => {
               }}
               name={name !== "" ? "checkmark" : ""}
               size={24}
-              color={name !== "" ? "#7874f2" : "red"}
+              color={name !== "" ? "green" : "red"}
             />
           </View>
         </View>
@@ -176,32 +182,61 @@ const Register = ({ navigation }) => {
               color: "#8e98f5",
             }}
           >
-            Username
+            Email-Id
           </Text>
           <View style={styles.passwordContainer}>
             <TextInput
               style={
                 Platform.OS == "web" ? styles.webUsername : styles.username
               }
-              value={username}
-              placeholder="Enter Text"
-              onChangeText={setUsername}
+              value={email}
+              placeholder="Enter Email"
+              onChangeText={setEmail}
             />
 
             <Ionicons
               style={{
                 paddingTop: 5,
               }}
-              name={username !== "" ? "checkmark" : ""}
+              name={email !== "" ? "checkmark" : ""}
               size={24}
-              color={username !== "" ? "#7874f2" : "red"}
+              color={email !== "" ? "green" : "red"}
+            />
+          </View>
+        </View>
+        <View style={styles.containerInputUsername}>
+          <Text
+            style={{
+              fontSize: 18,
+              color: "#8e98f5",
+            }}
+          >
+            Mobile Number
+          </Text>
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={
+                Platform.OS == "web" ? styles.webUsername : styles.username
+              }
+              value={mobile}
+              placeholder="Enter Mobile Number"
+              onChangeText={setMobile}
+            />
+
+            <Ionicons
+              style={{
+                paddingTop: 5,
+              }}
+              name={mobile.length == 10 ? "checkmark" : ""}
+              size={24}
+              color={mobile.length == 10 ? "green" : "red"}
             />
           </View>
         </View>
         <View
           style={[
             styles.containerInputPass,
-            { borderBottomColor: validPassword ? "#7874f2" : "gray" },
+            { borderBottomColor: validPassword ? "green" : "gray" },
           ]}
         >
           <Text
@@ -220,7 +255,7 @@ const Register = ({ navigation }) => {
               secureTextEntry={!showPassword}
               value={password}
               onChangeText={setPassword}
-              placeholder="Password"
+              placeholder="Enter Password"
             />
             <TouchableOpacity onPress={handleTogglePassword}>
               <Ionicons
@@ -240,7 +275,7 @@ const Register = ({ navigation }) => {
             {
               borderBottomColor:
                 password == confirmPassword && password !== ""
-                  ? "#7874f2"
+                  ? "green"
                   : "gray",
             },
           ]}
@@ -263,7 +298,7 @@ const Register = ({ navigation }) => {
               onChangeText={setConfirmPassword}
               placeholder="Re-enter Password"
             />
-            <TouchableOpacity onPress={handleTogglePassword}>
+            <TouchableOpacity onPress={handleToggleConfirmPassword}>
               <Ionicons
                 style={{
                   paddingTop: 5,
@@ -285,6 +320,7 @@ const Register = ({ navigation }) => {
             width: "80%",
             justifyContent: "center",
             flexDirection: "row",
+            paddingBottom: 20,
           }}
         >
           <Text

@@ -136,7 +136,7 @@ const Login = ({ navigation }) => {
               color: "#8e98f5",
             }}
           >
-            Username
+            Email-Id / Mobile Number
           </Text>
           <View style={styles.passwordContainer}>
             <TextInput
@@ -144,7 +144,7 @@ const Login = ({ navigation }) => {
                 Platform.OS == "web" ? styles.webUsername : styles.username
               }
               value={username}
-              placeholder="Enter Username"
+              placeholder="Enter email/mobile"
               onChangeText={setUsername}
             />
 
@@ -175,7 +175,7 @@ const Login = ({ navigation }) => {
               secureTextEntry={!showPassword}
               value={password}
               onChangeText={setPassword}
-              placeholder="Password"
+              placeholder="Enter Password"
             />
             <TouchableOpacity onPress={handleTogglePassword}>
               <Ionicons
