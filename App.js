@@ -5,6 +5,7 @@ const Stack = createNativeStackNavigator();
 import LandingScreen from "./screens/landingScreen";
 import Register from "./screens/register";
 import Login from "./screens/login";
+import AddExpense from "./screens/addExpense";
 
 export default function App() {
   return (
@@ -24,6 +25,11 @@ export default function App() {
           name="Register"
           component={Register}
           options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="AddExpense"
+          component={AddExpense}
+          // options={{ headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>
