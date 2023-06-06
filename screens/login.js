@@ -8,6 +8,9 @@ import {
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import app from "../firebaseConfig";
+
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
 const Login = ({ navigation }) => {
   const [username, setUsername] = useState("");
@@ -17,6 +20,22 @@ const Login = ({ navigation }) => {
 
   const handleTogglePassword = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleLogin = async () => {
+    try {
+      const auth = getAuth();
+      const { user } = await signInWithEmailAndPassword(
+        auth,
+        username,
+        password
+      );
+      // User successfully logged in, you can now proceed with further actions
+      // console.log("User logged in:", user);
+      navigation.navigate("Profile");
+    } catch (error) {
+      // console.log("Login error:", error.message);
+    }
   };
 
   const styles = StyleSheet.create({
@@ -136,7 +155,7 @@ const Login = ({ navigation }) => {
               color: "#8e98f5",
             }}
           >
-            Email-Id / Mobile Number
+            Email-Id
           </Text>
           <View style={styles.passwordContainer}>
             <TextInput
@@ -193,7 +212,7 @@ const Login = ({ navigation }) => {
           <TouchableOpacity
             style={styles.buttonSignIn}
             onPress={() => {
-              navigation.navigate("AddExpense");
+              handleLogin();
             }}
           >
             <Text style={styles.buttonTextSignIn}>Sign In</Text>
