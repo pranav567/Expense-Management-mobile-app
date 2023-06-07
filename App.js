@@ -13,6 +13,8 @@ import AddExpense from "./screens/addExpense";
 export default function App() {
   return (
     <>
+      <Toast position="top" topOffset={20} />
+
       <NavigationContainer>
         <Stack.Navigator>
           <Stack.Screen

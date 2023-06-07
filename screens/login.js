@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import app from "../firebaseConfig";
+import Toast from "react-native-toast-message";
 
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
@@ -34,6 +35,14 @@ const Login = ({ navigation }) => {
       // console.log("User logged in:", user);
       navigation.navigate("Home");
     } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: "Sign-In Error",
+        text2: "Invalid Credentials!",
+        position: "bottom",
+        visibilityTime: 4000,
+        autoHide: true,
+      });
       // console.log("Login error:", error.message);
     }
   };

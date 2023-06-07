@@ -16,7 +16,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "flex-start",
     padding: 15,
-    paddingTop: 25,
+    paddingTop: 28,
   },
 });
 
@@ -27,13 +27,18 @@ const Header = (props) => {
     <View style={styles.container}>
       <Text
         style={{
-          fontSize: 28,
+          fontSize: 25,
           color: "white",
         }}
       >
         {headerTitle}
       </Text>
-      <Ionicons name="power" size={30} color="#ec625f" />
+      <Ionicons
+        style={{ marginTop: 2 }}
+        name="power"
+        size={25}
+        color="#ec625f"
+      />
     </View>
   );
 };

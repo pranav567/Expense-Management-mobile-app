@@ -9,6 +9,7 @@ import {
 import BottomNavigator from "../components/bottomNavigator";
 import Header from "../components/header";
 import PersonalData from "../components/personalData";
+import Cards from "../components/cards";
 
 const Profile = ({ navigation }) => {
   const styles = StyleSheet.create({
@@ -49,12 +50,10 @@ const Profile = ({ navigation }) => {
         >
           {/* personal info */}
           <PersonalData />
-          <View style={styles.cards}>
-            <Text style={styles.headerContainerText}>Cards Data</Text>
-          </View>
           <View style={styles.security}>
             <Text style={styles.headerContainerText}>Security </Text>
           </View>
+          <Cards />
         </ScrollView>
       </View>
       <BottomNavigator buttonActive="profile" />
