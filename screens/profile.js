@@ -27,7 +27,7 @@ const Profile = ({ navigation }) => {
       justifyContent: "flex-start",
       width: "90%",
       marginTop: 90,
-      marginBottom: 60,
+      marginBottom: 65,
     },
     security: {},
     cards: {},
