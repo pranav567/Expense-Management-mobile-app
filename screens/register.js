@@ -55,7 +55,7 @@ const Register = ({ navigation }) => {
       });
 
       // console.log("User data stored in Firestore.");
-      navigation.navigate("Profile");
+      navigation.navigate("Home");
     } catch (error) {
       let errorMessage = "An error occurred during sign-up";
 

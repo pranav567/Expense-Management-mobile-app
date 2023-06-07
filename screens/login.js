@@ -32,7 +32,7 @@ const Login = ({ navigation }) => {
       );
       // User successfully logged in, you can now proceed with further actions
       // console.log("User logged in:", user);
-      navigation.navigate("Profile");
+      navigation.navigate("Home");
     } catch (error) {
       // console.log("Login error:", error.message);
     }

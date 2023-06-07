@@ -7,7 +7,8 @@ import {
 
 const LandingScreen = ({ navigation }) => {
   return (
-    <TouchableWithoutFeedback onPress={() => navigation.navigate("Login")}>
+    // <TouchableWithoutFeedback onPress={() => navigation.navigate("Login")}>
+    <TouchableWithoutFeedback>
       <View style={styles.container}>
         <Image source={require("../assets/logo.png")} style={styles.image} />
       </View>
