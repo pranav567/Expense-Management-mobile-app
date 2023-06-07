@@ -23,7 +23,7 @@ export default function App() {
           <Stack.Screen
             name="AddExpense"
             component={AddExpense}
-            // options={{ headerShown: false }}
+            options={{ headerShown: false }}
           />
           <Stack.Screen
             name="Profile"

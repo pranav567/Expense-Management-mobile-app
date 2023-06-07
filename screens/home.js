@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import BottomNavigator from "../components/bottomNavigator";
+import Header from "../components/header";
 
 const Home = ({ navigation }) => {
   const styles = StyleSheet.create({
@@ -20,12 +21,13 @@ const Home = ({ navigation }) => {
       height: 160,
     },
     scroll: {
-      marginTop: 30,
+      marginTop: 90,
       marginBottom: 60,
     },
   });
   return (
     <View style={styles.container}>
+      <Header headerTitle="Home" />
       <BottomNavigator buttonActive="home" />
     </View>
   );

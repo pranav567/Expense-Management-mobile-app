@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
 } from "react-native";
 import BottomNavigator from "../components/bottomNavigator";
+import Header from "../components/header";
+import PersonalData from "../components/personalData";
 
 const Profile = ({ navigation }) => {
   const styles = StyleSheet.create({
@@ -19,13 +21,42 @@ const Profile = ({ navigation }) => {
       width: 160,
       height: 160,
     },
-    scroll: {
-      marginTop: 30,
+    contentContainer: {
+      flex: 1,
+      justifyContent: "flex-start",
+      width: "90%",
+      marginTop: 90,
       marginBottom: 60,
+    },
+    security: {},
+    cards: {},
+    headerContainerText: {
+      fontSize: 25,
+      height: 40,
     },
   });
   return (
     <View style={styles.container}>
+      <Header headerTitle="Profile" />
+      <View style={styles.contentContainer}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            padding: 0,
+            margin: 0,
+            width: "100%",
+          }}
+        >
+          {/* personal info */}
+          <PersonalData />
+          <View style={styles.cards}>
+            <Text style={styles.headerContainerText}>Cards Data</Text>
+          </View>
+          <View style={styles.security}>
+            <Text style={styles.headerContainerText}>Security </Text>
+          </View>
+        </ScrollView>
+      </View>
       <BottomNavigator buttonActive="profile" />
     </View>
   );
