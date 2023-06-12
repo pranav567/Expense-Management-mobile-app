@@ -36,26 +36,43 @@ const Register = ({ navigation }) => {
 
   const registerNewUser = async (email, password) => {
     try {
-      const auth = getAuth(app);
-      const firestore = getFirestore(app);
+      if (
+        name !== "" &&
+        email !== "" &&
+        password !== "" &&
+        confirmPassword == password
+      ) {
+        const auth = getAuth(app);
+        const firestore = getFirestore(app);
 
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      const user = userCredential.user;
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+        const user = userCredential.user;
 
-      const usersCollection = collection(firestore, "users");
-      await addDoc(usersCollection, {
-        name: name,
-        email: user.email,
-        uid: user.uid,
-        transactions: [],
-      });
+        const usersCollection = collection(firestore, "users");
+        await addDoc(usersCollection, {
+          name: name,
+          email: user.email,
+          uid: user.uid,
+          transactions: [],
+          cards: [],
+        });
 
-      // console.log("User data stored in Firestore.");
-      navigation.navigate("Home");
+        // console.log("User data stored in Firestore.");
+        navigation.navigate("Home");
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Sign-Up Error",
+          text2: "Fill up details first!",
+          position: "bottom",
+          visibilityTime: 4000,
+          autoHide: true,
+        });
+      }
     } catch (error) {
       let errorMessage = "An error occurred during sign-up";
 
@@ -95,7 +112,7 @@ const Register = ({ navigation }) => {
   const styles = StyleSheet.create({
     containerOuter: {
       flex: 1,
-      backgroundColor: "#b1cbfa",
+      backgroundColor: "#393e46",
     },
     containerTitle: {
       width: "100%",
@@ -107,6 +124,7 @@ const Register = ({ navigation }) => {
     appname: {
       fontSize: 20,
       textAlign: "center",
+      color: "white",
     },
     containerRegister: {
       width: "100%",
@@ -125,14 +143,14 @@ const Register = ({ navigation }) => {
       paddingBottom: 5,
       width: "80%",
       borderBottomWidth: 1,
-      borderBottomColor: "#7874f2",
+      borderBottomColor: "#393e46",
     },
     containerInputUsername: {
       paddingTop: 25,
       paddingBottom: 5,
       width: "80%",
       borderBottomWidth: 1,
-      borderBottomColor: "#7874f2",
+      borderBottomColor: "#393e46",
     },
     containerInputPass: {
       paddingTop: 25,
@@ -173,7 +191,7 @@ const Register = ({ navigation }) => {
     buttonRegister: {
       width: "40%",
       height: 40,
-      backgroundColor: "#8e98f5",
+      backgroundColor: "#393e46",
       borderRadius: 10,
       alignItems: "center",
       justifyContent: "center",
@@ -202,7 +220,7 @@ const Register = ({ navigation }) => {
               style={{
                 fontSize: 30,
                 fontWeight: "bold",
-                color: "#8e98f5",
+                color: "#393e46",
               }}
             >
               Welcome
@@ -219,7 +237,7 @@ const Register = ({ navigation }) => {
             <Text
               style={{
                 fontSize: 18,
-                color: "#8e98f5",
+                color: "#393e46",
               }}
             >
               Full Name
@@ -248,7 +266,7 @@ const Register = ({ navigation }) => {
             <Text
               style={{
                 fontSize: 18,
-                color: "#8e98f5",
+                color: "#393e46",
               }}
             >
               Email-Id
@@ -269,7 +287,7 @@ const Register = ({ navigation }) => {
                 }}
                 name={email !== "" ? "checkmark" : ""}
                 size={24}
-                color={email !== "" ? "green" : "red"}
+                color={email !== "" ? "#393e46" : "red"}
               />
             </View>
           </View>
@@ -277,7 +295,7 @@ const Register = ({ navigation }) => {
             <Text
               style={{
                 fontSize: 18,
-                color: "#8e98f5",
+                color: "#393e46",
               }}
             >
               Mobile Number
@@ -306,13 +324,13 @@ const Register = ({ navigation }) => {
           <View
             style={[
               styles.containerInputPass,
-              { borderBottomColor: validPassword ? "green" : "gray" },
+              { borderBottomColor: validPassword ? "#393e46" : "gray" },
             ]}
           >
             <Text
               style={{
                 fontSize: 18,
-                color: "#8e98f5",
+                color: "#393e46",
               }}
             >
               Password
@@ -334,7 +352,7 @@ const Register = ({ navigation }) => {
                   }}
                   name={showPassword ? "eye-off" : "eye"}
                   size={24}
-                  color="#7874f2"
+                  color="#393e46"
                 />
               </TouchableOpacity>
             </View>
@@ -353,7 +371,7 @@ const Register = ({ navigation }) => {
             <Text
               style={{
                 fontSize: 18,
-                color: "#8e98f5",
+                color: "#393e46",
               }}
             >
               Confirm Password
@@ -375,7 +393,7 @@ const Register = ({ navigation }) => {
                   }}
                   name={showPassword ? "eye-off" : "eye"}
                   size={24}
-                  color="#7874f2"
+                  color="#393e46"
                 />
               </TouchableOpacity>
             </View>
@@ -415,7 +433,7 @@ const Register = ({ navigation }) => {
             >
               <Text
                 style={{
-                  color: "#8e98f5",
+                  color: "#393e46",
                   fontWeight: "bold",
                 }}
               >

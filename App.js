@@ -32,6 +32,16 @@ export default function App() {
             component={Profile}
             options={{ headerShown: false }}
           />
+          <Stack.Screen
+            name="Login"
+            component={Login}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Register"
+            component={Register}
+            options={{ headerShown: false }}
+          />
           {/* <Stack.Screen
             name="Landing"
             component={LandingScreen}

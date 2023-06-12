@@ -1,10 +1,29 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Text, View, StyleSheet } from "react-native";
+import app from "../firebaseConfig";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import {
+  getFirestore,
+  doc,
+  collection,
+  query,
+  where,
+  limit,
+  getDocs,
+} from "firebase/firestore";
+import { useEffect } from "react";
 
-const PersonalData = () => {
-  const [name, setName] = useState("Pranav Nair");
-  const [email, setEmail] = useState("pranavpn7@gmail.com");
+const PersonalData = (props) => {
+  const [name, setName] = useState(props.name);
+  const [email, setEmail] = useState(props.email);
+
+  // useEffect(()=>{
+
+  // },[])
+
+  const auth = getAuth(app);
+  const firestore = getFirestore(app);
 
   const styles = StyleSheet.create({
     personal: {

@@ -11,6 +11,8 @@ import {
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import Toast from "react-native-toast-message";
+import app from "../firebaseConfig";
+import { getFirestore, doc, updateDoc } from "firebase/firestore";
 
 const cards = [
   {
@@ -134,46 +136,88 @@ const CardComponent = (props) => {
   );
 };
 
-const Cards = () => {
-  const [name, setName] = useState("Pranav Nair");
-  const [email, setEmail] = useState("pranavpn7@gmail.com");
-  const [cardsData, setCardsData] = useState(cards);
+const Cards = (props) => {
+  const [cardsData, setCardsData] = useState(props.cards);
   const [newCard, setNewCard] = useState(false);
   const [selectedTypeofCard, setSelectedTypeofCard] = useState("bank");
   const [cardName, setCardName] = useState("");
   const [balance, setBalance] = useState("");
   const [cardId, setCardId] = useState("");
 
-  const handleInfoToast = () => {
-    Toast.show({
-      type: "info",
-      text1: "Card Id",
-      text2: "Pin set in security section will be used to display card id!",
-      position: "bottom",
-      visibilityTime: 5000,
-      autoHide: true,
-    });
+  const firestore = getFirestore(app);
+  // console.log(firestore);
+  // console.log("hello");
+  // console.log(doc(firestore, "users", props.docid));
+
+  // const handleInfoToast = () => {
+  //   Toast.show({
+  //     type: "info",
+  //     text1: "Card Id",
+  //     text2: "Pin set in security section will be used to display card id!",
+  //     position: "bottom",
+  //     visibilityTime: 5000,
+  //     autoHide: true,
+  //   });
+  // };
+
+  const checkRepeatCard = (name, id, cardType) => {
+    return (
+      cardsData.filter((obj) => {
+        return (
+          obj.cardName == name && obj.uniqueId == id && obj.type == cardType
+        );
+      }).length == 0
+    );
   };
 
-  const handleNewCard = () => {
+  const handleNewCard = async () => {
+    console.log();
     if (
       selectedTypeofCard !== "" &&
       cardName !== "" &&
       balance !== "" &&
       cardId !== ""
     ) {
-      const newCardData = {
-        type: selectedTypeofCard,
-        cardName: cardName,
-        uniqueId: cardId,
-        balance: parseFloat(balance),
-      };
-      setCardsData([...cardsData, newCardData]);
-      setSelectedTypeofCard("");
-      setCardId("");
-      setCardName("");
-      setBalance("");
-      setNewCard(false);
+      if (checkRepeatCard(cardName, cardId, selectedTypeofCard)) {
+        const newCardData = {
+          type: selectedTypeofCard,
+          cardName: cardName,
+          uniqueId: cardId,
+          balance: parseFloat(balance),
+        };
+        let arr = cardsData;
+        arr.push(newCardData);
+        setSelectedTypeofCard("");
+        setCardId("");
+        setCardName("");
+        setBalance("");
+        setNewCard(false);
+
+        try {
+          const documentRef = doc(firestore, "users", props.docId);
+          await updateDoc(documentRef, { cards: arr });
+          setCardsData(arr);
+        } catch (error) {
+          console.log(error);
+          Toast.show({
+            type: "error",
+            text1: "Database issue!",
+            text2: "Try again later!",
+            position: "bottom",
+            visibilityTime: 4000,
+            autoHide: true,
+          });
+        }
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Duplicate Details",
+          text2: "Card already present!",
+          position: "bottom",
+          visibilityTime: 4000,
+          autoHide: true,
+        });
+      }
     } else {
       Toast.show({
         type: "error",
@@ -192,11 +236,25 @@ const Cards = () => {
     setBalance(numericValue);
   };
 
-  const handleCardRemoval = (id) => {
+  const handleCardRemoval = async (id) => {
     let newCardData = cardsData.filter((obj, idx) => {
       return idx !== id;
     });
-    setCardsData(newCardData);
+    try {
+      const documentRef = doc(firestore, "users", props.docId);
+      await updateDoc(documentRef, { cards: newCardData });
+      setCardsData(newCardData);
+    } catch (error) {
+      console.log(error);
+      Toast.show({
+        type: "error",
+        text1: "Database issue!",
+        text2: "Try again later!",
+        position: "bottom",
+        visibilityTime: 4000,
+        autoHide: true,
+      });
+    }
   };
 
   const styles = StyleSheet.create({
@@ -280,7 +338,7 @@ const Cards = () => {
               },
             ]}
           >
-            <Text style={{ fontSize: 15, color: "#4C3D3D" }}>
+            <Text style={{ fontSize: 15, color: "#393e46" }}>
               Pick a Card Type <Text style={{ color: "red" }}>*</Text>
             </Text>
             <Picker
@@ -305,7 +363,7 @@ const Cards = () => {
                 },
               ]}
             >
-              <Text style={{ fontSize: 15, color: "#4C3D3D" }}>
+              <Text style={{ fontSize: 15, color: "#393e46" }}>
                 Enter Bank Name <Text style={{ color: "red" }}>*</Text>
               </Text>
               <TextInput
@@ -320,7 +378,7 @@ const Cards = () => {
             </View>
           ) : selectedTypeofCard == "travel" ? (
             <View style={styles.cardType}>
-              <Text style={{ fontSize: 15, color: "#4C3D3D" }}>
+              <Text style={{ fontSize: 15, color: "#393e46" }}>
                 Select Transport
               </Text>
               <Picker
@@ -347,7 +405,7 @@ const Cards = () => {
                 },
               ]}
             >
-              <Text style={{ fontSize: 15, color: "#4C3D3D" }}>
+              <Text style={{ fontSize: 15, color: "#393e46" }}>
                 Enter Card Name <Text style={{ color: "red" }}>*</Text>
               </Text>
               <TextInput
@@ -367,7 +425,7 @@ const Cards = () => {
               },
             ]}
           >
-            <Text style={{ fontSize: 15, color: "#4C3D3D" }}>
+            <Text style={{ fontSize: 15, color: "#393e46" }}>
               Enter Balance <Text style={{ color: "red" }}>*</Text>
             </Text>
             <View style={{ flexDirection: "row" }}>
@@ -402,7 +460,7 @@ const Cards = () => {
               },
             ]}
           >
-            <Text style={{ fontSize: 15, color: "#4C3D3D" }}>
+            <Text style={{ fontSize: 15, color: "#393e46" }}>
               Enter Card Id <Text style={{ color: "red" }}>*</Text>
               {/* <TouchableOpacity
                 onPress={() => {
@@ -461,14 +519,14 @@ const Cards = () => {
                 width: "25%",
                 // backgroundColor: "#ff7575",
                 borderWidth: 1,
-                borderColor: "#4C3D3D",
+                borderColor: "#393e46",
                 borderRadius: 30,
                 height: 30,
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <Text style={{ fontSize: 15, color: "#4C3D3D" }}>Add</Text>
+              <Text style={{ fontSize: 15, color: "#393e46" }}>Add</Text>
             </TouchableOpacity>
           </View>
         </View>

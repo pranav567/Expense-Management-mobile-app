@@ -17,11 +17,26 @@ import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect } from "react";
 
-//#4C3D3D
+import app from "../firebaseConfig";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  limit,
+  getDocs,
+} from "firebase/firestore";
+
+//#393e46
 
 const expenseCategoryData = ["Travel", "Bank", "Food", "Shopping", "other"];
 
 const AddTransaction = ({ navigation }) => {
+  const auth = getAuth(app);
+  const firestore = getFirestore(app);
+
+  const [cardsList, setCardsList] = useState([]);
   const [transactionType, setTransactionType] = useState(null);
   const [unnecessary, setUnnecessary] = useState(null);
   const [recurring, setRecurring] = useState(null);
@@ -51,6 +66,55 @@ const AddTransaction = ({ navigation }) => {
     };
 
     expenseCategories();
+  }, []);
+
+  useEffect(() => {
+    async function storeData() {
+      let uid = "";
+      try {
+        await new Promise((resolve, reject) => {
+          onAuthStateChanged(auth, (user) => {
+            if (user) {
+              // User is logged in, get user data
+              uid = user.uid;
+              resolve();
+            } else {
+              // User is not logged in
+              navigation.navigate("Login");
+              console.log("No user logged in");
+              reject();
+            }
+          });
+        });
+
+        const usersCollectionRef = collection(firestore, "users");
+        const queryDoc = query(
+          usersCollectionRef,
+          where("uid", "==", uid),
+          limit(1)
+        );
+
+        const querySnapshot = await getDocs(queryDoc);
+
+        if (!querySnapshot.empty) {
+          const doc = querySnapshot.docs[0];
+          // Handle the matching document
+          const dataUser = doc.data();
+          setCardsList(dataUser.cards);
+          // console.log(userData);
+        } else {
+          // No matching document found
+          navigation.navigate("Login");
+          // console.log("User document does not exist");
+        }
+      } catch (error) {
+        // Handle error
+        // console.log(error);
+        navigation.navigate("Login");
+      }
+    }
+
+    storeData();
   }, []);
 
   const handleAddExpenseCategory = async () => {
@@ -116,7 +180,7 @@ const AddTransaction = ({ navigation }) => {
             showToast = true;
           } else showToast = false;
         }
-        console.log(data);
+        // console.log(data);
         if (!showToast) {
           Toast.show({
             type: "error",
@@ -209,19 +273,19 @@ const AddTransaction = ({ navigation }) => {
       height: 20,
       borderRadius: 10,
       borderWidth: 2,
-      borderColor: "#4C3D3D",
+      borderColor: "#393e46",
       alignItems: "center",
       justifyContent: "center",
       marginRight: 5,
     },
     radioButtonSelected: {
-      borderColor: "#4C3D3D",
+      borderColor: "#393e46",
     },
     radioButtonInner: {
       width: 12,
       height: 12,
       borderRadius: 6,
-      backgroundColor: "#4C3D3D",
+      backgroundColor: "#393e46",
     },
     field2: {
       flexDirection: "column",
@@ -232,7 +296,7 @@ const AddTransaction = ({ navigation }) => {
       marginTop: 5,
       flexDirection: "row",
       borderBottomWidth: 1,
-      borderColor: "#4C3D3D",
+      borderColor: "#393e46",
       paddingBottom: 5,
     },
     rcvdField1: {
@@ -243,13 +307,13 @@ const AddTransaction = ({ navigation }) => {
     rcvdPicker1: {
       backgroundColor: "#F5F5F5",
       marginTop: 10,
-      color: "#4C3D3D",
+      color: "#393e46",
     },
     category: {
       marginTop: 15,
       flexDirection: "row",
       borderBottomWidth: 1,
-      borderColor: "#4C3D3D",
+      borderColor: "#393e46",
       paddingBottom: 5,
       // width: "98%",
     },
@@ -272,7 +336,7 @@ const AddTransaction = ({ navigation }) => {
       margin: 20,
       justifyContent: "flex-start",
       borderBottomWidth: 1,
-      borderColor: "#4C3D3D",
+      borderColor: "#393e46",
       paddingBottom: 5,
     },
     describeField: {
@@ -292,7 +356,7 @@ const AddTransaction = ({ navigation }) => {
             <Text
               style={{
                 fontSize: 25,
-                color: "#4C3D3D",
+                color: "#393e46",
               }}
             >
               New Transaction
@@ -392,9 +456,13 @@ const AddTransaction = ({ navigation }) => {
                     setTo(itemValue);
                   }}
                 >
-                  <Picker.Item label="card-1" value="card-1" />
-                  <Picker.Item label="card-2" value="card-2" />
-                  <Picker.Item label="card-3" value="card-3" />
+                  {cardsList.map((obj, id) => (
+                    <Picker.Item
+                      key={id}
+                      label={obj.cardName}
+                      value={obj.cardName}
+                    />
+                  ))}
                   <Picker.Item label="in-hand" value="in-hand" />
                 </Picker>
               </View>
@@ -413,9 +481,13 @@ const AddTransaction = ({ navigation }) => {
                     setFrom(itemValue);
                   }}
                 >
-                  <Picker.Item label="card-1" value="card-1" />
-                  <Picker.Item label="card-2" value="card-2" />
-                  <Picker.Item label="card-3" value="card-3" />
+                  {cardsList.map((obj, id) => (
+                    <Picker.Item
+                      key={id}
+                      label={obj.cardName}
+                      value={obj.cardName}
+                    />
+                  ))}
                   <Picker.Item label="in-hand" value="in-hand" />
                 </Picker>
               </View>
@@ -433,9 +505,13 @@ const AddTransaction = ({ navigation }) => {
                     setTo(itemValue);
                   }}
                 >
-                  <Picker.Item label="card-1" value="card-1" />
-                  <Picker.Item label="card-2" value="card-2" />
-                  <Picker.Item label="card-3" value="card-3" />
+                  {cardsList.map((obj, id) => (
+                    <Picker.Item
+                      key={id}
+                      label={obj.cardName}
+                      value={obj.cardName}
+                    />
+                  ))}
                 </Picker>
               </View>
               <View style={styles.rcvdField1}>
@@ -580,9 +656,13 @@ const AddTransaction = ({ navigation }) => {
                     setFrom(itemValue);
                   }}
                 >
-                  <Picker.Item label="card-1" value="card-1" />
-                  <Picker.Item label="card-2" value="card-2" />
-                  <Picker.Item label="card-3" value="card-3" />
+                  {cardsList.map((obj, id) => (
+                    <Picker.Item
+                      key={id}
+                      label={obj.cardName}
+                      value={obj.cardName}
+                    />
+                  ))}
                   <Picker.Item label="in-hand" value="in-hand" />
                 </Picker>
               </View>
@@ -597,9 +677,13 @@ const AddTransaction = ({ navigation }) => {
                     setTo(itemValue);
                   }}
                 >
-                  <Picker.Item label="card-1" value="card-1" />
-                  <Picker.Item label="card-2" value="card-2" />
-                  <Picker.Item label="card-3" value="card-3" />
+                  {cardsList.map((obj, id) => (
+                    <Picker.Item
+                      key={id}
+                      label={obj.cardName}
+                      value={obj.cardName}
+                    />
+                  ))}
                   <Picker.Item label="in-hand" value="in-hand" />
                 </Picker>
               </View>
@@ -631,16 +715,16 @@ const AddTransaction = ({ navigation }) => {
                 width: "30%",
                 // borderWidth: 1,
                 // backgroundColor: "#96a0f5",
-                // backgroundColor: "#4C3D3D",
+                // backgroundColor: "#393e46",
                 borderWidth: 2,
-                borderColor: "#4C3D3D",
+                borderColor: "#393e46",
                 borderRadius: 30,
                 height: 35,
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <Text style={{ fontSize: 18, color: "#4C3D3D" }}>Add</Text>
+              <Text style={{ fontSize: 18, color: "#393e46" }}>Add</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

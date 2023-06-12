@@ -50,7 +50,7 @@ const Login = ({ navigation }) => {
   const styles = StyleSheet.create({
     containerOuter: {
       flex: 1,
-      backgroundColor: "#b1cbfa",
+      backgroundColor: "#393e46",
     },
     containerTitle: {
       width: "100%",
@@ -61,6 +61,7 @@ const Login = ({ navigation }) => {
     },
     appname: {
       fontSize: 24,
+      color: "white",
     },
     containerLogin: {
       width: "100%",
@@ -79,14 +80,14 @@ const Login = ({ navigation }) => {
       paddingBottom: 5,
       width: "80%",
       borderBottomWidth: 1,
-      borderBottomColor: username !== "" ? "#7874f2" : "gray",
+      borderBottomColor: "#393e46",
     },
     containerInputPass: {
       paddingTop: 25,
       paddingBottom: 5,
       width: "80%",
       borderBottomWidth: 1,
-      borderBottomColor: validPassword ? "#7874f2" : "gray",
+      borderBottomColor: "#393e46",
     },
     username: {
       width: "90%",
@@ -121,7 +122,7 @@ const Login = ({ navigation }) => {
     buttonSignIn: {
       width: "40%",
       height: 40,
-      backgroundColor: "#8e98f5",
+      backgroundColor: "#393e46",
       borderRadius: 10,
       alignItems: "center",
       justifyContent: "center",
@@ -144,7 +145,7 @@ const Login = ({ navigation }) => {
             style={{
               fontSize: 30,
               fontWeight: "bold",
-              color: "#8e98f5",
+              color: "#393e46",
             }}
           >
             Welcome
@@ -161,7 +162,7 @@ const Login = ({ navigation }) => {
           <Text
             style={{
               fontSize: 18,
-              color: "#8e98f5",
+              color: "#393e46",
             }}
           >
             Email-Id
@@ -182,7 +183,7 @@ const Login = ({ navigation }) => {
               }}
               name={username !== "" ? "checkmark" : ""}
               size={24}
-              color={username !== "" ? "#7874f2" : "red"}
+              color={username !== "" ? "#393e46" : "red"}
             />
           </View>
         </View>
@@ -190,7 +191,7 @@ const Login = ({ navigation }) => {
           <Text
             style={{
               fontSize: 18,
-              color: "#8e98f5",
+              color: "#393e46",
             }}
           >
             Password
@@ -212,7 +213,7 @@ const Login = ({ navigation }) => {
                 }}
                 name={showPassword ? "eye-off" : "eye"}
                 size={24}
-                color="#7874f2"
+                color="#393e46"
               />
             </TouchableOpacity>
           </View>
@@ -251,7 +252,7 @@ const Login = ({ navigation }) => {
           >
             <Text
               style={{
-                color: "#8e98f5",
+                color: "#393e46",
                 fontWeight: "bold",
               }}
             >

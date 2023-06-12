@@ -1,6 +1,8 @@
 import { StyleSheet, View, TouchableOpacity, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { getAuth } from "firebase/auth";
+import app from "../firebaseConfig";
 
 const styles = StyleSheet.create({
   container: {
@@ -23,6 +25,19 @@ const styles = StyleSheet.create({
 const Header = (props) => {
   const navigation = useNavigation();
   const { headerTitle } = props; //values: home, add, profile
+
+  const auth = getAuth(app);
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();
+      navigation.replace("Login");
+      // User has been logged out successfully
+      // You can perform any necessary actions here
+    } catch (error) {
+      // An error occurred while logging out
+      // console.log(error);
+    }
+  };
   return (
     <View style={styles.container}>
       <Text
@@ -35,12 +50,14 @@ const Header = (props) => {
       >
         {headerTitle}
       </Text>
-      <Ionicons
-        style={{ marginTop: 2 }}
-        name="power"
-        size={25}
-        color="#3d3931"
-      />
+      <TouchableOpacity onPress={() => handleLogout()}>
+        <Ionicons
+          style={{ marginTop: 2 }}
+          name="power"
+          size={25}
+          color="#3d3931"
+        />
+      </TouchableOpacity>
     </View>
   );
 };
