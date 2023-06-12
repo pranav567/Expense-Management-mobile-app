@@ -9,8 +9,11 @@ const PersonalData = () => {
   const styles = StyleSheet.create({
     personal: {
       width: "100%",
-      backgroundColor: "#daeaf6",
-      borderRadius: 30,
+      // backgroundColor: "#daeaf6",
+      backgroundColor: "white",
+      borderWidth: 1,
+      borderColor: "#d3d6db",
+      borderRadius: 10,
       padding: 20,
       justifyContent: "flex-start",
     },

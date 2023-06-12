@@ -109,8 +109,8 @@ const CardComponent = (props) => {
           >
             <Ionicons
               size={18}
-              name={showId ? "eye-off" : "eye"}
-              color="#8e98f5"
+              name={showId ? "eye-off-outline" : "eye-outline"}
+              color="#3d3931"
               style={{ marginLeft: 20 }}
             />
           </TouchableOpacity>
@@ -156,7 +156,12 @@ const Cards = () => {
   };
 
   const handleNewCard = () => {
-    if (selectedTypeofCard !== "" && cardName !== "" && balance !== "") {
+    if (
+      selectedTypeofCard !== "" &&
+      cardName !== "" &&
+      balance !== "" &&
+      cardId !== ""
+    ) {
       const newCardData = {
         type: selectedTypeofCard,
         cardName: cardName,
@@ -174,11 +179,17 @@ const Cards = () => {
         type: "error",
         text1: "Incomplete Details",
         text2: "Fill all the required Fields",
-        position: "top",
+        position: "bottom",
         visibilityTime: 4000,
         autoHide: true,
       });
     }
+  };
+
+  const handleAmountChange = (text) => {
+    // Remove non-numeric characters
+    const numericValue = text.replace(/[^0-9.]/g, "");
+    setBalance(numericValue);
   };
 
   const handleCardRemoval = (id) => {
@@ -192,8 +203,11 @@ const Cards = () => {
     cards: {
       marginTop: 40,
       width: "100%",
-      backgroundColor: "#d1f6c1",
-      borderRadius: 30,
+      // backgroundColor: "#d1f6c1",
+      backgroundColor: "white",
+      borderWidth: 1,
+      borderColor: "#d3d6db",
+      borderRadius: 10,
       padding: 20,
       justifyContent: "flex-start",
       // height: 400,
@@ -220,12 +234,13 @@ const Cards = () => {
       alignItems: "center",
     },
     cardType: {
-      marginTop: 10,
+      marginTop: 25,
     },
     cardTypePicker: {
+      backgroundColor: "#F5F5F5",
       // outlineColor: "transparent",
       // borderWidth: 1,
-      marginTop: 0,
+      marginTop: 5,
       fontSize: 18,
     },
     cardComponent: {
@@ -248,7 +263,7 @@ const Cards = () => {
             if (!newCard) setNewCard(true);
           }}
         >
-          <Ionicons name="add" color="#ff7575" size={30} />
+          <Ionicons name="add-circle-outline" color="#ff7575" size={30} />
         </TouchableOpacity>
         <Ionicons name="card" color="#ff7575" size={30} />
       </View>
@@ -265,8 +280,8 @@ const Cards = () => {
               },
             ]}
           >
-            <Text style={{ fontSize: 18, color: "#8e98f5" }}>
-              Pick a Card Type : <Text style={{ color: "red" }}>*</Text>
+            <Text style={{ fontSize: 15, color: "#4C3D3D" }}>
+              Pick a Card Type <Text style={{ color: "red" }}>*</Text>
             </Text>
             <Picker
               style={styles.cardTypePicker}
@@ -290,7 +305,7 @@ const Cards = () => {
                 },
               ]}
             >
-              <Text style={{ fontSize: 18, color: "#8e98f5" }}>
+              <Text style={{ fontSize: 15, color: "#4C3D3D" }}>
                 Enter Bank Name <Text style={{ color: "red" }}>*</Text>
               </Text>
               <TextInput
@@ -305,8 +320,8 @@ const Cards = () => {
             </View>
           ) : selectedTypeofCard == "travel" ? (
             <View style={styles.cardType}>
-              <Text style={{ fontSize: 18, color: "#8e98f5" }}>
-                Select Transport :
+              <Text style={{ fontSize: 15, color: "#4C3D3D" }}>
+                Select Transport
               </Text>
               <Picker
                 style={styles.cardTypePicker}
@@ -332,7 +347,7 @@ const Cards = () => {
                 },
               ]}
             >
-              <Text style={{ fontSize: 18, color: "#8e98f5" }}>
+              <Text style={{ fontSize: 15, color: "#4C3D3D" }}>
                 Enter Card Name <Text style={{ color: "red" }}>*</Text>
               </Text>
               <TextInput
@@ -349,22 +364,21 @@ const Cards = () => {
               {
                 paddingBottom: 5,
                 borderBottomWidth: 1,
-                marginTop: 20,
               },
             ]}
           >
-            <Text style={{ fontSize: 18, color: "#8e98f5" }}>
+            <Text style={{ fontSize: 15, color: "#4C3D3D" }}>
               Enter Balance <Text style={{ color: "red" }}>*</Text>
             </Text>
             <View style={{ flexDirection: "row" }}>
-              <Image
+              {/* <Image
                 source={require("../assets/rupee.png")}
                 style={{
                   width: 24,
                   height: 30,
                   marginTop: 15,
                 }}
-              />
+              /> */}
               <TextInput
                 style={{
                   marginTop: 10,
@@ -375,7 +389,7 @@ const Cards = () => {
                 keyboardType="numeric"
                 maxLength={15}
                 placeholder="Enter Balance"
-                onChangeText={setBalance}
+                onChangeText={handleAmountChange}
               />
             </View>
           </View>
@@ -385,13 +399,12 @@ const Cards = () => {
               {
                 paddingBottom: 5,
                 borderBottomWidth: 1,
-                marginTop: 20,
               },
             ]}
           >
-            <Text style={{ fontSize: 18, color: "#8e98f5" }}>
-              Enter Card Id{" "}
-              <TouchableOpacity
+            <Text style={{ fontSize: 15, color: "#4C3D3D" }}>
+              Enter Card Id <Text style={{ color: "red" }}>*</Text>
+              {/* <TouchableOpacity
                 onPress={() => {
                   handleInfoToast();
                 }}
@@ -401,7 +414,7 @@ const Cards = () => {
                   size={20}
                   color="red"
                 />
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </Text>
             <TextInput
               style={{
@@ -412,7 +425,7 @@ const Cards = () => {
               value={cardId}
               keyboardType="numeric"
               maxLength={20}
-              placeholder="Enter Card Id (optional)"
+              placeholder="Enter Card Id "
               onChangeText={setCardId}
             />
           </View>
@@ -448,14 +461,14 @@ const Cards = () => {
                 width: "25%",
                 // backgroundColor: "#ff7575",
                 borderWidth: 1,
-                borderColor: "#8e98f5",
+                borderColor: "#4C3D3D",
                 borderRadius: 30,
                 height: 30,
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <Text style={{ fontSize: 15, color: "#8e98f5" }}>Add</Text>
+              <Text style={{ fontSize: 15, color: "#4C3D3D" }}>Add</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -483,7 +496,7 @@ const Cards = () => {
                   handleCardRemoval(id);
                 }}
               >
-                <Ionicons name="trash-bin" color="red" size={24} />
+                <Ionicons name="trash-bin-outline" color="#3d3931" size={24} />
               </TouchableOpacity>
             </View>
           ))}

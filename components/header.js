@@ -5,13 +5,13 @@ import { useNavigation } from "@react-navigation/native";
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    backgroundColor: "#8e98f5",
+    backgroundColor: "white",
     top: 0,
     left: 0,
     right: 0,
     height: 70, // Adjust the height as per your requirement
-    borderBottomRightRadius: 10,
-    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 20,
+    borderBottomLeftRadius: 20,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
@@ -27,8 +27,10 @@ const Header = (props) => {
     <View style={styles.container}>
       <Text
         style={{
-          fontSize: 25,
-          color: "white",
+          fontSize: 20,
+          marginTop: 5,
+          marginLeft: 10,
+          color: "#3d3931",
         }}
       >
         {headerTitle}
@@ -37,7 +39,7 @@ const Header = (props) => {
         style={{ marginTop: 2 }}
         name="power"
         size={25}
-        color="#ec625f"
+        color="#3d3931"
       />
     </View>
   );

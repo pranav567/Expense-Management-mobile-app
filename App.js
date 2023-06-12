@@ -8,7 +8,7 @@ import Register from "./screens/register";
 import Login from "./screens/login";
 import Home from "./screens/home";
 import Profile from "./screens/profile";
-import AddExpense from "./screens/addExpense";
+import AddTransaction from "./screens/addTransaction";
 
 export default function App() {
   return (
@@ -23,8 +23,8 @@ export default function App() {
             options={{ headerShown: false }}
           />
           <Stack.Screen
-            name="AddExpense"
-            component={AddExpense}
+            name="AddTransaction"
+            component={AddTransaction}
             options={{ headerShown: false }}
           />
           <Stack.Screen
