@@ -297,7 +297,7 @@ const AddTransaction = ({ navigation }) => {
               setUnnecessary(null);
               setRecurring(null);
               setAmountInvolved("");
-              setExpenseClassification("");
+              // setExpenseClassification("");
               setAmountInvolved("");
               setFromObj(null);
               setToObj(null);
