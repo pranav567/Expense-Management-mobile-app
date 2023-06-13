@@ -1,5 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
+import { Dimensions } from "react-native";
+
 import {
   Text,
   View,
@@ -13,6 +15,9 @@ import { Picker } from "@react-native-picker/picker";
 import Toast from "react-native-toast-message";
 import app from "../firebaseConfig";
 import { getFirestore, doc, updateDoc } from "firebase/firestore";
+
+import { useSelector, useDispatch } from "react-redux";
+import { setCardProfileModal } from "../store";
 
 const cards = [
   {
@@ -48,24 +53,34 @@ const cards = [
 ];
 
 const CardComponent = (props) => {
+  const dispatch = useDispatch();
+
+  const updateCardProfileModal = () => {
+    dispatch(setCardProfileModal(props));
+  };
+
+  const windowWidth = Dimensions.get("window").width;
   const { type, cardName, uniqueId, balance } = props;
-  const [showId, setShowId] = useState(false);
+  // const [showId, setShowId] = useState(false);
   const styles = StyleSheet.create({
     cardContainer: {
       flexDirection: "row",
-      justifyContent: "flex-start",
+      justifyContent: "space-between",
+      // backgroundColor: "yellow",
     },
     image: {
-      width: 60,
-      height: 60,
+      marginTop: 5,
+      marginLeft: 8,
+      width: 50,
+      height: 50,
       borderRadius: 20,
       marginRight: 15,
     },
     cardData: {
       flexDirection: "column",
-      justifyContent: "flex-start",
+      justifyContent: "space-evenly",
 
-      marginRight: 15,
+      marginRight: windowWidth < 405 ? 8 : 15,
     },
   });
 
@@ -82,21 +97,61 @@ const CardComponent = (props) => {
     return imagePath;
   };
   return (
-    <View style={styles.cardContainer}>
+    <TouchableOpacity
+      onPress={() => updateCardProfileModal()}
+      style={styles.cardContainer}
+    >
       {/* image box */}
       <Image source={handleImagePath(type, cardName)} style={styles.image} />
       <View style={styles.cardData}>
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-          <Text style={{ fontSize: 15, width: 90, marginRight: 5 }}>
-            Type :{" "}
-            <Text style={{ fontSize: 15, textTransform: "capitalize" }}>
+          <Text
+            style={{
+              fontSize: 15,
+              width: 90,
+              marginRight: 5,
+              fontWeight: "bold",
+            }}
+          >
+            Type{"  "}
+            <Text
+              style={{
+                fontSize: 15,
+                textTransform: "capitalize",
+                fontWeight: "400",
+              }}
+            >
               {type[0]}
               <Text style={{ fontSize: 15, textTransform: "lowercase" }}>
                 {type.slice(1)}
               </Text>
             </Text>
           </Text>
-          <Text style={{ fontSize: 15 }}>
+          <Text style={{ fontSize: 15, fontWeight: "bold" }}>
+            Name{"  "}
+            <Text
+              style={{
+                fontSize: 15,
+                textTransform: "capitalize",
+                fontWeight: "400",
+              }}
+            >
+              {cardName[0]}
+              {cardName.slice(1).length > 4 ? (
+                <Text style={{ fontSize: 15, textTransform: "lowercase" }}>
+                  {cardName.slice(1, 5)}...
+                </Text>
+              ) : (
+                <Text style={{ fontSize: 15, textTransform: "lowercase" }}>
+                  {cardName.slice(1)}
+                </Text>
+              )}
+              {/* <Text style={{ fontSize: 15, textTransform: "lowercase" }}>
+                {cardName.slice(1)}
+              </Text> */}
+            </Text>
+          </Text>
+          {/* <Text style={{ fontSize: 15 }}>
             Id :{" "}
             {!showId
               ? "****"
@@ -115,28 +170,20 @@ const CardComponent = (props) => {
               color="#3d3931"
               style={{ marginLeft: 20 }}
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         <Text style={{ fontSize: 13, marginTop: 3 }}>
-          Name :{" "}
-          <Text style={{ fontSize: 13, textTransform: "capitalize" }}>
-            {cardName[0]}
-            <Text style={{ fontSize: 13, textTransform: "lowercase" }}>
-              {cardName.slice(1)}
-            </Text>
-          </Text>
-        </Text>
-
-        <Text style={{ fontSize: 13, marginTop: 3 }}>
-          Balance : Rs. {balance}
+          <Text style={{ fontWeight: "bold" }}>Balance </Text> Rs. {balance}
         </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
 const Cards = (props) => {
+  const windowWidth = Dimensions.get("window").width;
+
   const [cardsData, setCardsData] = useState(props.cards);
   const [newCard, setNewCard] = useState(false);
   const [selectedTypeofCard, setSelectedTypeofCard] = useState("bank");
@@ -145,20 +192,12 @@ const Cards = (props) => {
   const [cardId, setCardId] = useState("");
 
   const firestore = getFirestore(app);
-  // console.log(firestore);
-  // console.log("hello");
-  // console.log(doc(firestore, "users", props.docid));
 
-  // const handleInfoToast = () => {
-  //   Toast.show({
-  //     type: "info",
-  //     text1: "Card Id",
-  //     text2: "Pin set in security section will be used to display card id!",
-  //     position: "bottom",
-  //     visibilityTime: 5000,
-  //     autoHide: true,
-  //   });
-  // };
+  const dispatch = useDispatch();
+
+  const updateCardProfileModal = () => {
+    dispatch(setCardProfileModal(null));
+  };
 
   const checkRepeatCard = (name, id, cardType) => {
     return (
@@ -307,11 +346,13 @@ const Cards = (props) => {
       backgroundColor: "rgba(128, 128, 128, 0.1)",
       padding: 5,
       borderRadius: 10,
+      justifyContent: "space-between",
     },
   });
 
   return (
     <View style={styles.cards}>
+      {/* <ModalComponent /> */}
       <View style={styles.header}>
         <Text style={[styles.headerContainerText, { width: "70%" }]}>
           Cards
@@ -548,14 +589,33 @@ const Cards = (props) => {
                 uniqueId={obj.uniqueId}
                 balance={obj.balance}
               />
-              <TouchableOpacity
-                style={{ marginTop: 25 }}
-                onPress={() => {
-                  handleCardRemoval(id);
-                }}
-              >
-                <Ionicons name="trash-bin-outline" color="#3d3931" size={24} />
-              </TouchableOpacity>
+              {windowWidth < 405 ? (
+                <TouchableOpacity
+                  style={{ marginTop: 20, marginRight: 35 }}
+                  onPress={() => {
+                    handleCardRemoval(id);
+                  }}
+                >
+                  <Ionicons
+                    name="trash-bin-outline"
+                    color="#3d3931"
+                    size={24}
+                  />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={{ marginTop: 20, marginRight: 35 }}
+                  onPress={() => {
+                    handleCardRemoval(id);
+                  }}
+                >
+                  <Ionicons
+                    name="trash-bin-outline"
+                    color="#3d3931"
+                    size={24}
+                  />
+                </TouchableOpacity>
+              )}
             </View>
           ))}
         </View>

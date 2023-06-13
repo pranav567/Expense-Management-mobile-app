@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   StyleSheet,
   TextInput,
@@ -22,6 +22,24 @@ const Login = ({ navigation }) => {
   const handleTogglePassword = () => {
     setShowPassword(!showPassword);
   };
+
+  useEffect(() => {
+    try {
+      const logi = async () => {
+        const auth = getAuth();
+        const { user } = await signInWithEmailAndPassword(
+          auth,
+          "pranavpn7@gmail.com",
+          "Panda@123"
+        );
+        // User successfully logged in, you can now proceed with further actions
+        // console.log("User logged in:", user);
+        navigation.navigate("Home");
+      };
+
+      logi();
+    } catch (error) {}
+  }, []);
 
   const handleLogin = async () => {
     try {

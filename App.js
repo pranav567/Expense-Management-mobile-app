@@ -2,6 +2,9 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Toast from "react-native-toast-message";
 
+import { Provider } from "react-redux";
+import store from "./store";
+
 const Stack = createNativeStackNavigator();
 import LandingScreen from "./screens/landingScreen";
 import Register from "./screens/register";
@@ -12,7 +15,7 @@ import AddTransaction from "./screens/addTransaction";
 
 export default function App() {
   return (
-    <>
+    <Provider store={store}>
       <Toast position="top" topOffset={20} />
 
       <NavigationContainer>
@@ -61,6 +64,6 @@ export default function App() {
       </NavigationContainer>
 
       <Toast position="bottom" bottomOffset={20} />
-    </>
+    </Provider>
   );
 }

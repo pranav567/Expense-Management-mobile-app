@@ -13,6 +13,10 @@ import Cards from "../components/cards";
 import Security from "../components/security";
 import app from "../firebaseConfig";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import CardModal from "../components/cardModal";
+
+import { useSelector } from "react-redux";
+
 import {
   getFirestore,
   collection,
@@ -80,6 +84,8 @@ const Profile = ({ navigation }) => {
     storeData();
   }, []);
 
+  const cardProfileModal = useSelector((state) => state.cardProfileModal);
+
   const styles = StyleSheet.create({
     container: {
       flex: 1,
@@ -129,6 +135,7 @@ const Profile = ({ navigation }) => {
         </ScrollView>
       </View>
       <BottomNavigator buttonActive="profile" />
+      {cardProfileModal.cardProfileModal !== null ? <CardModal /> : <></>}
     </View>
   );
 };
