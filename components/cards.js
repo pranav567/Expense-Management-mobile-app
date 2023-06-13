@@ -386,6 +386,8 @@ const Cards = (props) => {
               style={styles.cardTypePicker}
               selectedValue={selectedTypeofCard}
               onValueChange={(itemValue) => {
+                if (itemValue == "travel") setCardName("metro");
+                else setCardName("");
                 setSelectedTypeofCard(itemValue);
               }}
             >

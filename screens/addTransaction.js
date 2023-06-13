@@ -26,6 +26,9 @@ import {
   where,
   limit,
   getDocs,
+  doc,
+  updateDoc,
+  setDoc,
 } from "firebase/firestore";
 
 //#393e46
@@ -43,11 +46,31 @@ const AddTransaction = ({ navigation }) => {
   const [amountInvolved, setAmountInvolved] = useState("");
   const [expenseClassification, setExpenseClassification] = useState("");
   const [from, setFrom] = useState("");
+  const [fromObj, setFromObj] = useState(null);
+  const [toObj, setToObj] = useState(null);
   const [to, setTo] = useState("");
   const [expensePicker, setExpensePicker] = useState(expenseCategoryData);
   const [otherCategory, setOtherCategory] = useState("");
   const [description, setDescription] = useState("");
   const [wordCount, setWordCount] = useState("0");
+  const [transactions, setTransactions] = useState([]);
+  const [docId, setDocId] = useState("");
+
+  const handleFromChange = (itemValue, itemIndex) => {
+    setFromObj(JSON.parse(itemValue));
+  };
+
+  const stringifyFrom = () => {
+    return JSON.stringify(fromObj);
+  };
+
+  const handleToChange = (itemValue, itemIndex) => {
+    setToObj(JSON.parse(itemValue));
+  };
+
+  const stringifyTo = () => {
+    return JSON.stringify(toObj);
+  };
 
   useEffect(() => {
     const expenseCategories = async () => {
@@ -100,7 +123,9 @@ const AddTransaction = ({ navigation }) => {
           const doc = querySnapshot.docs[0];
           // Handle the matching document
           const dataUser = doc.data();
+          setDocId(doc.id);
           setCardsList(dataUser.cards);
+          setTransactions(dataUser.transactions);
           // console.log(userData);
         } else {
           // No matching document found
@@ -141,32 +166,52 @@ const AddTransaction = ({ navigation }) => {
     setAmountInvolved(numericValue);
   };
 
-  const handleAddTransaction = () => {
+  const compareCards = () => {
+    if (toObj == null) return true;
+    else if ("mode" in fromObj && "mode" in toObj) {
+      if (fromObj["mode"] == toObj["mode"]) return false;
+      else return true;
+    } else {
+      if ("mode" in fromObj) return true;
+      else if ("mode" in toObj) return true;
+      else {
+        if (
+          fromObj.cardName == toObj.cardName &&
+          fromObj.uniqueId == toObj.uniqueId &&
+          fromObj.type == toObj.type
+        )
+          return false;
+        else return true;
+      }
+    }
+  };
+
+  const handleAddTransaction = async () => {
     let data = {};
     let showToast = true;
     if (transactionType !== null) {
       data["transactionType"] = transactionType;
-      try {
+      if (amountInvolved !== "") {
         const amount = parseFloat(amountInvolved);
         data["amount"] = amount;
         data["description"] = description;
         if (transactionType == "Internal Transfer") {
-          if (from !== "" && to !== "" && from !== to) {
-            data["from"] = from;
-            data["to"] = to;
+          if (fromObj !== null && toObj !== null && compareCards()) {
+            data["from"] = fromObj;
+            data["to"] = toObj;
             showToast = true;
           } else showToast = false;
         } else if (transactionType == "Spent") {
           if (
-            from !== "" &&
-            from !== to &&
+            fromObj !== null &&
+            compareCards() &&
             expenseClassification !== "" &&
             expenseClassification !== "other" &&
             unnecessary !== null &&
             recurring !== null
           ) {
-            data["from"] = from;
-            if (to !== "") data["to"] = to;
+            data["from"] = fromObj;
+            if (toObj !== null) data["to"] = toObj;
             data["expenseClassification"] = expenseClassification;
             if (unnecessary === "Yes") data["unnecessary"] = true;
             else data["unnecessary"] = false;
@@ -175,8 +220,8 @@ const AddTransaction = ({ navigation }) => {
             showToast = true;
           } else showToast = false;
         } else if (transactionType == "Received") {
-          if (to !== "") {
-            data["to"] = to;
+          if (toObj !== null) {
+            data["to"] = toObj;
             showToast = true;
           } else showToast = false;
         }
@@ -191,21 +236,83 @@ const AddTransaction = ({ navigation }) => {
             autoHide: true,
           });
         } else {
+          data["description"] = description;
           data["date"] = new Date();
-          Toast.show({
-            type: "success",
-            text1: "Transaction added",
-            // text2: "Fill all required Fields",
-            position: "bottom",
-            visibilityTime: 4000,
-            autoHide: true,
-          });
+          let transactionId = 1;
+          if (transactions.length > 0) {
+            transactionId =
+              transactions[transactions.length - 1].transactionId + 1;
+          }
+          data["transactionId"] = transactionId;
+          transactions.push(data);
+
+          //update balance in cards
+          let arr = cardsList;
+          for (let i = 0; i < arr.length; i++) {
+            if (fromObj !== null && !("mode" in fromObj)) {
+              if (
+                fromObj.cardName == arr[i].cardName &&
+                fromObj.uniqueId == arr[i].uniqueId &&
+                fromObj.type == arr[i].type
+              ) {
+                arr[i].balance =
+                  parseFloat(arr[i].balance) - parseFloat(amountInvolved);
+              }
+            }
+            if (toObj !== null && !("mode" in toObj)) {
+              if (
+                toObj.cardName == arr[i].cardName &&
+                toObj.uniqueId == arr[i].uniqueId &&
+                toObj.type == arr[i].type
+              ) {
+                arr[i].balance =
+                  parseFloat(arr[i].balance) + parseFloat(amountInvolved);
+              }
+            }
+          }
+          try {
+            const documentRef = doc(firestore, "users", docId);
+            await updateDoc(documentRef, {
+              transactions: transactions,
+              cards: arr,
+            });
+            // setCardsData(arr);
+            Toast.show({
+              type: "success",
+              text1: "Transaction added",
+              // text2: "Fill all required Fields",
+              position: "bottom",
+              visibilityTime: 4000,
+              autoHide: true,
+            });
+            setTransactionType(null);
+            setUnnecessary(null);
+            setRecurring(null);
+            setAmountInvolved("");
+            setExpenseClassification("");
+            setAmountInvolved("");
+            setFromObj(null);
+            setToObj(null);
+            setDescription("");
+            setWordCount("0");
+            navigation.navigate("Home");
+          } catch (error) {
+            console.log(error);
+            Toast.show({
+              type: "error",
+              text1: "Database issue!",
+              text2: "Try again later!",
+              position: "bottom",
+              visibilityTime: 4000,
+              autoHide: true,
+            });
+          }
         }
-      } catch (error) {
+      } else {
         Toast.show({
           type: "error",
           text1: "Amount field",
-          text2: "Check entered values! (input only numbers)",
+          text2: "Enter Ammount! (input only numbers)",
           position: "bottom",
           visibilityTime: 4000,
           autoHide: true,
@@ -374,7 +481,15 @@ const AddTransaction = ({ navigation }) => {
                 ]}
                 onPress={() => {
                   if (transactionType === "Received") setTransactionType(null);
-                  else setTransactionType("Received");
+                  else {
+                    // setTo("metro");
+                    if (cardsList.length > 0) {
+                      setToObj(cardsList[0]);
+                    } else {
+                      setToObj({ mode: "cash" });
+                    }
+                    setTransactionType("Received");
+                  }
                 }}
               >
                 {transactionType === "Received" && (
@@ -390,7 +505,19 @@ const AddTransaction = ({ navigation }) => {
                 ]}
                 onPress={() => {
                   if (transactionType === "Spent") setTransactionType(null);
-                  else setTransactionType("Spent");
+                  else {
+                    setTransactionType("Spent");
+                    // setFrom("metro");
+                    // if (cardsList.length > 1) setTo("metro");
+                    setExpenseClassification("Travel");
+                    if (cardsList.length > 0) {
+                      setFromObj(cardsList[0]);
+                      setToObj({ mode: "cash" });
+                    } else {
+                      setFromObj({ mode: "cash" });
+                      setToObj(null);
+                    }
+                  }
                 }}
               >
                 {transactionType === "Spent" && (
@@ -408,7 +535,18 @@ const AddTransaction = ({ navigation }) => {
                 onPress={() => {
                   if (transactionType === "Internal Transfer")
                     setTransactionType(null);
-                  else setTransactionType("Internal Transfer");
+                  else {
+                    setTransactionType("Internal Transfer");
+                    // setFrom("metro");
+                    // setTo("metro");
+                    if (cardsList.length > 0) {
+                      setFromObj(cardsList[0]);
+                      setToObj(cardsList[0]);
+                    } else {
+                      setFromObj({ mode: "cash" });
+                      setToObj({ mode: "cash" });
+                    }
+                  }
                 }}
               >
                 {transactionType === "Internal Transfer" && (
@@ -451,19 +589,20 @@ const AddTransaction = ({ navigation }) => {
                 </Text>
                 <Picker
                   style={styles.rcvdPicker1}
-                  selectedValue={to}
-                  onValueChange={(itemValue) => {
-                    setTo(itemValue);
-                  }}
+                  selectedValue={stringifyTo()}
+                  onValueChange={handleToChange}
                 >
                   {cardsList.map((obj, id) => (
                     <Picker.Item
                       key={id}
-                      label={obj.cardName}
-                      value={obj.cardName}
+                      label={`${obj.cardName}-${obj.uniqueId}`}
+                      value={JSON.stringify(obj)}
                     />
                   ))}
-                  <Picker.Item label="in-hand" value="in-hand" />
+                  <Picker.Item
+                    label="cash"
+                    value={JSON.stringify({ mode: "cash" })}
+                  />
                 </Picker>
               </View>
             </>
@@ -476,19 +615,20 @@ const AddTransaction = ({ navigation }) => {
                 </Text>
                 <Picker
                   style={styles.rcvdPicker1}
-                  selectedValue={from}
-                  onValueChange={(itemValue) => {
-                    setFrom(itemValue);
-                  }}
+                  selectedValue={stringifyFrom()}
+                  onValueChange={handleFromChange}
                 >
                   {cardsList.map((obj, id) => (
                     <Picker.Item
                       key={id}
-                      label={obj.cardName}
-                      value={obj.cardName}
+                      label={`${obj.cardName}-${obj.uniqueId}`}
+                      value={JSON.stringify(obj)}
                     />
                   ))}
-                  <Picker.Item label="in-hand" value="in-hand" />
+                  <Picker.Item
+                    label="cash"
+                    value={JSON.stringify({ mode: "cash" })}
+                  />
                 </Picker>
               </View>
               <View style={styles.rcvdField1}>
@@ -500,20 +640,23 @@ const AddTransaction = ({ navigation }) => {
                 </Text>
                 <Picker
                   style={styles.rcvdPicker1}
-                  selectedValue={to}
-                  onValueChange={(itemValue) => {
-                    setTo(itemValue);
-                  }}
+                  selectedValue={stringifyTo()}
+                  onValueChange={handleToChange}
                 >
+                  <Picker.Item
+                    label="None"
+                    value={JSON.stringify({ mode: "none" })}
+                  />
                   {cardsList.map((obj, id) => (
                     <Picker.Item
                       key={id}
-                      label={obj.cardName}
-                      value={obj.cardName}
+                      label={`${obj.cardName}-${obj.uniqueId}`}
+                      value={JSON.stringify(obj)}
                     />
                   ))}
                 </Picker>
               </View>
+
               <View style={styles.rcvdField1}>
                 <Text style={{ fontSize: 18 }}>
                   Expense Classification{" "}
@@ -651,19 +794,20 @@ const AddTransaction = ({ navigation }) => {
                 </Text>
                 <Picker
                   style={styles.rcvdPicker1}
-                  selectedValue={from}
-                  onValueChange={(itemValue) => {
-                    setFrom(itemValue);
-                  }}
+                  selectedValue={stringifyFrom()}
+                  onValueChange={handleFromChange}
                 >
                   {cardsList.map((obj, id) => (
                     <Picker.Item
                       key={id}
-                      label={obj.cardName}
-                      value={obj.cardName}
+                      label={`${obj.cardName}-${obj.uniqueId}`}
+                      value={JSON.stringify(obj)}
                     />
                   ))}
-                  <Picker.Item label="in-hand" value="in-hand" />
+                  <Picker.Item
+                    label="cash"
+                    value={JSON.stringify({ mode: "cash" })}
+                  />
                 </Picker>
               </View>
               <View style={styles.intField1}>
@@ -672,19 +816,20 @@ const AddTransaction = ({ navigation }) => {
                 </Text>
                 <Picker
                   style={styles.rcvdPicker1}
-                  selectedValue={to}
-                  onValueChange={(itemValue) => {
-                    setTo(itemValue);
-                  }}
+                  selectedValue={stringifyTo()}
+                  onValueChange={handleToChange}
                 >
                   {cardsList.map((obj, id) => (
                     <Picker.Item
                       key={id}
-                      label={obj.cardName}
-                      value={obj.cardName}
+                      label={`${obj.cardName}-${obj.uniqueId}`}
+                      value={JSON.stringify(obj)}
                     />
                   ))}
-                  <Picker.Item label="in-hand" value="in-hand" />
+                  <Picker.Item
+                    label="cash"
+                    value={JSON.stringify({ mode: "cash" })}
+                  />
                 </Picker>
               </View>
             </>
