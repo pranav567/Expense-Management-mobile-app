@@ -46,9 +46,14 @@ const TransactionModal = () => {
   const handleImagePath = (type) => {
     let imagePath = "";
     if (type == "Bank") imagePath = require("../assets/bank.png");
-    else if (type == "Transportation")
-      imagePath = require("../assets/metro.png");
-    else imagePath = require("../assets/randomCard.png");
+    else if (type == "Transportation") {
+      let imgObj = {
+        1: require("../assets/metro.png"),
+        2: require("../assets/bus.png"),
+        3: require("../assets/train.png"),
+      };
+      imagePath = imgObj[Math.floor(Math.random() * 3) + 1];
+    } else imagePath = require("../assets/randomCard.png");
 
     return imagePath;
   };

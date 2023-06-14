@@ -34,7 +34,8 @@ const RecentTransactions = (props) => {
       const userData = docSnapshot.data();
       if (userData) {
         let arr = userData.transactions;
-        arr.reverse();
+
+        arr = arr.sort((a, b) => b.date.seconds - a.date.seconds);
         setTransactions(arr);
         // Handle the change in the 'transaction' field
         // console.log("Transactions updated:", transactions);
@@ -112,7 +113,7 @@ const RecentTransactions = (props) => {
         {transactions.length < 6 ? (
           <TouchableOpacity
             onPress={() => {
-              navigation.navigate("AllTransactions");
+              navigation.navigate("All Transactions", { docId: props.docId });
             }}
           >
             <Ionicons
@@ -248,10 +249,16 @@ const RecentTransactions = (props) => {
             >
               <TouchableOpacity
                 onPress={() => {
-                  navigation.navigate("AllTransactions");
+                  navigation.navigate("All Transactions", {
+                    docId: props.docId,
+                  });
                 }}
               >
-                <Ionicons name="arrow-forward-circle-outline" size={50} />
+                <Ionicons
+                  name="arrow-forward-circle-outline"
+                  size={50}
+                  color="#8B8080"
+                />
               </TouchableOpacity>
             </View>
           </ScrollView>

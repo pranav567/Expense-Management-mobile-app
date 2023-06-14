@@ -32,7 +32,7 @@ export default function App() {
             options={{ headerShown: false }}
           />
           <Stack.Screen
-            name="AllTransactions"
+            name="All Transactions"
             component={AllTransactions}
             // options={{ headerShown: false }}
           />
