@@ -1,23 +1,13 @@
-import {
-  StyleSheet,
-  View,
-  TouchableOpacity,
-  ImageBackground,
-  Text,
-  Image,
-} from "react-native";
-// import ExpoBlurView from "expo-blur";
-
+import { StyleSheet, View, TouchableOpacity, Text, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import { useSelector, useDispatch } from "react-redux";
-import { setCardProfileModal } from "../store";
+import { setTransactionModal } from "../store";
 
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
     backgroundColor: "rgba(0, 0, 0, 0.8)",
-    // backfaceVisibility: "hidden",
     width: "100%",
     height: "100%",
     justifyContent: "center",
@@ -32,7 +22,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   header: { alignItems: "center" },
-  body1: { flexDirection: "row", marginTop: 20 },
+  body1: { flexDirection: "row", marginTop: 15 },
   innerBody: {
     marginLeft: 20,
     flexDirection: "column",
@@ -42,56 +32,66 @@ const styles = StyleSheet.create({
   cardId: { flexDirection: "row", justifyContent: "center", marginTop: 20 },
 });
 
-const CardModal = () => {
-  const cardProfileModal = useSelector(
-    (state) => state.cardProfileModal.cardProfileModal
+const TransactionModal = () => {
+  const transactionModal = useSelector(
+    (state) => state.transactionModal.transactionModal
   );
   //   console.log(cardProfileModal);
   const dispatch = useDispatch();
 
-  const updateCardProfileModal = () => {
-    dispatch(setCardProfileModal(null));
+  const updateTransactionModal = () => {
+    dispatch(setTransactionModal(null));
   };
 
-  const handleImagePath = (type, cardName) => {
+  const handleImagePath = (type) => {
     let imagePath = "";
-    if (type == "bank") imagePath = require("../assets/bank.png");
-    else if (type == "travel") {
-      if (cardName == "metro") imagePath = require("../assets/metro.png");
-      else if (cardName == "bus") imagePath = require("../assets/bus.png");
-      else if (cardName == "train") imagePath = require("../assets/train.png");
-      else imagePath = require("../assets/randomCard.png");
-    } else imagePath = require("../assets/randomCard.png");
+    if (type == "Bank") imagePath = require("../assets/bank.png");
+    else if (type == "Transportation")
+      imagePath = require("../assets/metro.png");
+    else imagePath = require("../assets/randomCard.png");
 
     return imagePath;
+  };
+
+  const getFormattedDate = (dateObj) => {
+    const transactionDate = dateObj.toDate();
+    const day = String(transactionDate.getDate()).padStart(2, "0");
+    const month = String(transactionDate.getMonth() + 1).padStart(2, "0");
+    const year = String(transactionDate.getFullYear());
+
+    const formattedDate = `${day}/${month}/${year}`;
+    return formattedDate;
+    // Get current time
+    // const hours = String(transactionDate.getHours() % 12 || 12).padStart(2, "0");
+    // const minutes = String(transactionDate.getMinutes()).padStart(2, "0");
+    // const meridiem = transactionDate.getHours() >= 12 ? "PM" : "AM";
+
+    // const formattedTime = `${hours}:${minutes} ${meridiem}`;
   };
 
   return (
     <TouchableOpacity
       style={styles.container}
       onPress={() => {
-        updateCardProfileModal();
+        updateTransactionModal();
       }}
     >
-      {/* <ImageBackground source={require("../assets/blur.png")}> */}
       <View style={styles.cardContainer}>
         <View style={styles.header}>
           <Text
             style={{
               color: "#393e46",
               fontSize: 20,
+              fontWeight: "bold",
               textTransform: "capitalize",
             }}
           >
-            {cardProfileModal.cardName}
+            Rs. {transactionModal.amount}
           </Text>
         </View>
         <View style={styles.body1}>
           <Image
-            source={handleImagePath(
-              cardProfileModal.type,
-              cardProfileModal.cardName
-            )}
+            source={handleImagePath(transactionModal.description)}
             style={{ width: 60, borderRadius: 10, height: 60 }}
           />
           <View style={styles.innerBody}>
@@ -114,7 +114,7 @@ const CardModal = () => {
                   textTransform: "capitalize",
                 }}
               >
-                {cardProfileModal.type}
+                {transactionModal.transactionType}
               </Text>
             </View>
             <View style={styles.balance}>
@@ -126,15 +126,12 @@ const CardModal = () => {
                   fontSize: 15,
                 }}
               >
-                Balance
+                Date
               </Text>
               <Text
                 style={{ color: "#393e46", marginLeft: 10, marginRight: 5 }}
               >
-                Rs.
-              </Text>
-              <Text style={{ color: "#393e46" }}>
-                {cardProfileModal.balance}
+                {transactionModal.date}
               </Text>
             </View>
           </View>
@@ -143,21 +140,20 @@ const CardModal = () => {
           <Text
             style={{
               color: "#393e46",
-              width: "15%",
+              width: "45%",
               fontWeight: "bold",
-              fontSize: 18,
+              fontSize: 17,
             }}
           >
-            Id
+            Description
           </Text>
-          <Text style={{ color: "#393e46", fontSize: 18 }}>
-            {cardProfileModal.uniqueId}
+          <Text style={{ color: "#393e46", fontSize: 17 }}>
+            {transactionModal.description}
           </Text>
         </View>
       </View>
-      {/* </ImageBackground> */}
     </TouchableOpacity>
   );
 };
 
-export default CardModal;
+export default TransactionModal;

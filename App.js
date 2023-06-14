@@ -12,6 +12,7 @@ import Login from "./screens/login";
 import Home from "./screens/home";
 import Profile from "./screens/profile";
 import AddTransaction from "./screens/addTransaction";
+import AllTransactions from "./screens/allTransactions";
 
 export default function App() {
   return (
@@ -29,6 +30,11 @@ export default function App() {
             name="Home"
             component={Home}
             options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="AllTransactions"
+            component={AllTransactions}
+            // options={{ headerShown: false }}
           />
           <Stack.Screen
             name="AddTransaction"

@@ -3,6 +3,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { getAuth } from "firebase/auth";
 import app from "../firebaseConfig";
+import { setLogoutModal } from "../store";
+import { useSelector, useDispatch } from "react-redux";
 
 const styles = StyleSheet.create({
   container: {
@@ -23,20 +25,28 @@ const styles = StyleSheet.create({
 });
 
 const Header = (props) => {
+  // const logoutModal = useSelector((state) => state.logoutModal.logoutModal);
+  //   console.log(cardProfileModal);
+  const dispatch = useDispatch();
+
+  const updateLogoutModal = () => {
+    dispatch(setLogoutModal(true));
+  };
   const navigation = useNavigation();
   const { headerTitle } = props; //values: home, add, profile
 
   const auth = getAuth(app);
-  const handleLogout = async () => {
-    try {
-      await auth.signOut();
-      navigation.replace("Login");
-      // User has been logged out successfully
-      // You can perform any necessary actions here
-    } catch (error) {
-      // An error occurred while logging out
-      // console.log(error);
-    }
+  const handleLogout = () => {
+    // try {
+    //   await auth.signOut();
+    //   navigation.replace("Login");
+    //   // User has been logged out successfully
+    //   // You can perform any necessary actions here
+    // } catch (error) {
+    //   // An error occurred while logging out
+    //   // console.log(error);
+    // }
+    // updateLogoutModal();
   };
   return (
     <View style={styles.container}>
@@ -50,7 +60,7 @@ const Header = (props) => {
       >
         {headerTitle}
       </Text>
-      <TouchableOpacity onPress={() => handleLogout()}>
+      <TouchableOpacity onPress={() => updateLogoutModal()}>
         <Ionicons
           style={{ marginTop: 2 }}
           name="power"

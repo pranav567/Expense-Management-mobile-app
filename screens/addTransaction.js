@@ -32,6 +32,8 @@ import {
 } from "firebase/firestore";
 
 import { suggestions } from "../suggestions";
+import LogoutModal from "../components/logoutModal";
+import { useSelector, useDispatch } from "react-redux";
 //#393e46
 
 // const expenseCategoryData = ["Travel", "Bank", "Food", "Shopping", "other"];
@@ -57,6 +59,8 @@ const AddTransaction = ({ navigation }) => {
   const [transactions, setTransactions] = useState([]);
   const [docId, setDocId] = useState("");
   const [domains, setDomains] = useState([]);
+
+  const logoutModal = useSelector((state) => state.logoutModal.logoutModal);
 
   const handleFromChange = (itemValue, itemIndex) => {
     setFromObj(JSON.parse(itemValue));
@@ -901,6 +905,7 @@ const AddTransaction = ({ navigation }) => {
         </ScrollView>
       </View>
       <BottomNavigator buttonActive="add" />
+      {logoutModal ? <LogoutModal /> : <></>}
     </View>
   );
 };

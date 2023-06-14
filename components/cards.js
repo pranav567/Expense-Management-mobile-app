@@ -193,12 +193,6 @@ const Cards = (props) => {
 
   const firestore = getFirestore(app);
 
-  const dispatch = useDispatch();
-
-  const updateCardProfileModal = () => {
-    dispatch(setCardProfileModal(null));
-  };
-
   const checkRepeatCard = (name, id, cardType) => {
     return (
       cardsData.filter((obj) => {
@@ -210,7 +204,7 @@ const Cards = (props) => {
   };
 
   const handleNewCard = async () => {
-    console.log();
+    // console.log();
     if (
       selectedTypeofCard !== "" &&
       cardName !== "" &&

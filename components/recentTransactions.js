@@ -5,11 +5,27 @@ import { TouchableOpacity } from "react-native";
 import { Text, View, StyleSheet, ScrollView } from "react-native";
 import app from "../firebaseConfig";
 import { getFirestore, doc, onSnapshot } from "firebase/firestore";
+import { useSelector, useDispatch } from "react-redux";
+import { setTransactionModal } from "../store";
+import { useNavigation } from "@react-navigation/native";
 
 const RecentTransactions = (props) => {
+  const navigation = useNavigation();
   // console.log(props);
   const firestore = getFirestore(app);
   const [transactions, setTransactions] = useState([]);
+  const dispatch = useDispatch();
+
+  const updateTransactionModal = (obj) => {
+    let newObj = {
+      amount: obj.amount,
+      description: obj.description,
+      date: getFormattedDate(obj.date),
+      transactionType: obj.transactionType,
+    };
+    // console.log(newObj);
+    dispatch(setTransactionModal(newObj));
+  };
 
   useEffect(() => {
     // console.log(props.docId);
@@ -53,8 +69,9 @@ const RecentTransactions = (props) => {
 
   const styles = StyleSheet.create({
     container: {
-      margin: 20,
+      margin: 5,
       marginTop: 10,
+      padding: 10,
     },
     headerRow: {
       padding: 5,
@@ -64,7 +81,7 @@ const RecentTransactions = (props) => {
     innerContainer: { padding: 10, paddingTop: 0, paddingLeft: 5 },
     transaction: {
       flexDirection: "column",
-      backgroundColor: "white",
+      backgroundColor: "#f5f5f5",
       //#f5f5f5
       margin: 8,
       //   width: 220,
@@ -92,6 +109,21 @@ const RecentTransactions = (props) => {
         <Text style={{ fontSize: 22, color: "#393e46" }}>
           Recent Transactions
         </Text>
+        {transactions.length < 6 ? (
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate("AllTransactions");
+            }}
+          >
+            <Ionicons
+              name="arrow-forward-circle-outline"
+              size={28}
+              color="#393e46"
+            />
+          </TouchableOpacity>
+        ) : (
+          <></>
+        )}
       </View>
       <View style={styles.innerContainer}>
         {transactions.length == 0 ? (
@@ -99,7 +131,10 @@ const RecentTransactions = (props) => {
         ) : transactions.length < 6 ? (
           <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
             {transactions.map((obj, id) => (
-              <View
+              <TouchableOpacity
+                onPress={() => {
+                  updateTransactionModal(obj);
+                }}
                 key={id}
                 style={[
                   styles.transaction,
@@ -142,13 +177,16 @@ const RecentTransactions = (props) => {
                 <Text style={{ fontSize: 14, color: "#393e46" }}>
                   {obj.description}
                 </Text>
-              </View>
+              </TouchableOpacity>
             ))}
           </ScrollView>
         ) : (
           <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
             {transactions.slice(0, 5).map((obj, id) => (
-              <View
+              <TouchableOpacity
+                onPress={() => {
+                  updateTransactionModal(obj);
+                }}
                 key={id}
                 style={[
                   styles.transaction,
@@ -191,7 +229,7 @@ const RecentTransactions = (props) => {
                 <Text style={{ fontSize: 14, color: "#393e46" }}>
                   {obj.description}
                 </Text>
-              </View>
+              </TouchableOpacity>
             ))}
             <View
               key={5}
@@ -208,7 +246,11 @@ const RecentTransactions = (props) => {
                 },
               ]}
             >
-              <TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  navigation.navigate("AllTransactions");
+                }}
+              >
                 <Ionicons name="arrow-forward-circle-outline" size={50} />
               </TouchableOpacity>
             </View>

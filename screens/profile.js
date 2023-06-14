@@ -15,7 +15,8 @@ import app from "../firebaseConfig";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import CardModal from "../components/cardModal";
 
-import { useSelector } from "react-redux";
+import LogoutModal from "../components/logoutModal";
+import { useSelector, useDispatch } from "react-redux";
 
 import {
   getFirestore,
@@ -84,7 +85,11 @@ const Profile = ({ navigation }) => {
     storeData();
   }, []);
 
-  const cardProfileModal = useSelector((state) => state.cardProfileModal);
+  const cardProfileModal = useSelector(
+    (state) => state.cardProfileModal.cardProfileModal
+  );
+  const logoutModal = useSelector((state) => state.logoutModal.logoutModal);
+  // console.log(cardProfileModal);
 
   const styles = StyleSheet.create({
     container: {
@@ -135,7 +140,8 @@ const Profile = ({ navigation }) => {
         </ScrollView>
       </View>
       <BottomNavigator buttonActive="profile" />
-      {cardProfileModal.cardProfileModal !== null ? <CardModal /> : <></>}
+      {cardProfileModal !== null ? <CardModal /> : <></>}
+      {logoutModal ? <LogoutModal /> : <></>}
     </View>
   );
 };

@@ -22,18 +22,31 @@ import {
   getDocs,
 } from "firebase/firestore";
 import TransactionModal from "../components/transactionModal";
-import LogoutModal from "../components/logoutModal";
 import { useSelector, useDispatch } from "react-redux";
 
-const Home = ({ navigation }) => {
+const AllTransactions = ({ navigation }) => {
   const auth = getAuth(app);
   const firestore = getFirestore(app);
-  const [docId, setDocId] = useState("");
+  const [transactions, setTransactions] = useState([]);
   const transactionModal = useSelector(
     (state) => state.transactionModal.transactionModal
   );
-  const logoutModal = useSelector((state) => state.logoutModal.logoutModal);
-  // console.log(logoutModal);
+
+  const getFormattedDate = (dateObj) => {
+    const transactionDate = dateObj.toDate();
+    const day = String(transactionDate.getDate()).padStart(2, "0");
+    const month = String(transactionDate.getMonth() + 1).padStart(2, "0");
+    const year = String(transactionDate.getFullYear());
+
+    const formattedDate = `${day}/${month}/${year}`;
+    return formattedDate;
+    // Get current time
+    // const hours = String(transactionDate.getHours() % 12 || 12).padStart(2, "0");
+    // const minutes = String(transactionDate.getMinutes()).padStart(2, "0");
+    // const meridiem = transactionDate.getHours() >= 12 ? "PM" : "AM";
+
+    // const formattedTime = `${hours}:${minutes} ${meridiem}`;
+  };
 
   useEffect(() => {
     async function storeData() {
@@ -64,7 +77,8 @@ const Home = ({ navigation }) => {
           const doc = querySnapshot.docs[0];
           // Handle the matching document
           const dataUser = doc.data();
-          setDocId(doc.id);
+          setTransactions(dataUser.transactions);
+          //   setDocId(doc.id);
         } else {
           navigation.navigate("Login");
         }
@@ -94,15 +108,15 @@ const Home = ({ navigation }) => {
   });
   return (
     <View style={styles.container}>
-      <Header headerTitle="Home" />
+      {/* <Header headerTitle="AllTransactions" /> */}
       <View style={styles.innerContainer}>
-        {docId !== "" ? <RecentTransactions docId={docId} /> : <></>}
+        {/* {docId !== "" ? <RecentTransactions docId={docId} /> : <></>} */}
+        <Text>Hello</Text>
       </View>
-      <BottomNavigator buttonActive="home" />
+      <BottomNavigator buttonActive="none" />
       {transactionModal !== null ? <TransactionModal /> : <></>}
-      {logoutModal ? <LogoutModal /> : <></>}
     </View>
   );
 };
 
-export default Home;
+export default AllTransactions;
