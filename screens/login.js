@@ -25,7 +25,7 @@ const Login = ({ navigation }) => {
 
   useEffect(() => {
     try {
-      const logi = async () => {
+      const login = async () => {
         const auth = getAuth();
         const { user } = await signInWithEmailAndPassword(
           auth,
@@ -37,7 +37,7 @@ const Login = ({ navigation }) => {
         navigation.navigate("Home");
       };
 
-      logi();
+      login();
     } catch (error) {}
   }, []);
 

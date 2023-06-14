@@ -67,31 +67,13 @@ const AddTransaction = ({ navigation }) => {
   };
 
   const handleToChange = (itemValue, itemIndex) => {
+    // console.log(`hell - ${itemValue}`);
     setToObj(JSON.parse(itemValue));
   };
 
   const stringifyTo = () => {
     return JSON.stringify(toObj);
   };
-
-  // useEffect(() => {
-  //   const expenseCategories = async () => {
-  //     try {
-  //       // await AsyncStorage.removeItem("expensePicker");
-  //       const value = await AsyncStorage.getItem("expensePicker");
-  //       if (value !== null) {
-  //         setExpensePicker(JSON.parse(value));
-  //       } else {
-  //         await AsyncStorage.setItem(
-  //           "expensePicker",
-  //           JSON.stringify(expenseCategoryData)
-  //         );
-  //       }
-  //     } catch (err) {}
-  //   };
-
-  //   expenseCategories();
-  // }, []);
 
   useEffect(() => {
     async function storeData() {
@@ -144,24 +126,6 @@ const AddTransaction = ({ navigation }) => {
     storeData();
   }, []);
 
-  // const handleAddExpenseCategory = async () => {
-  //   let arr = expensePicker.slice(0, expensePicker.length - 1);
-  //   arr.push(otherCategory);
-  //   arr.push("other");
-  //   try {
-  //     const update = await AsyncStorage.setItem(
-  //       "expensePicker",
-  //       JSON.stringify(arr)
-  //     );
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-
-  //   setExpensePicker(arr);
-  //   setExpenseClassification(otherCategory);
-  //   setOtherCategory("");
-  // };
-
   const handleAmountChange = (text) => {
     // Remove non-numeric characters
     const numericValue = text.replace(/[^0-9.]/g, "");
@@ -213,6 +177,7 @@ const AddTransaction = ({ navigation }) => {
               showToast = true;
             } else showToast = false;
           } else if (transactionType == "Spent") {
+            // console.log(`hello - ${compareCards()}`);
             if (
               fromObj !== null &&
               compareCards() &&
@@ -542,7 +507,7 @@ const AddTransaction = ({ navigation }) => {
                     // setExpenseClassification("Travel");
                     if (cardsList.length > 0) {
                       setFromObj(cardsList[0]);
-                      setToObj({ mode: "cash" });
+                      setToObj({ mode: "none" });
                     } else {
                       setFromObj({ mode: "cash" });
                       setToObj(null);
