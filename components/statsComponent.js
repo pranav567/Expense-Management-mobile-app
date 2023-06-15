@@ -115,7 +115,14 @@ const statsComponent = (props) => {
   return (
     <View style={styles.container}>
       <View style={styles.monthly}>
-        <Text style={{ fontSize: 22, width: "75%" }}>
+        <Text
+          style={{
+            fontSize: 22,
+            width: "75%",
+            color: "#393e46",
+            fontWeight: "bold",
+          }}
+        >
           {getMonthName()} {monthlyHeader ? "Outgoing" : "Incoming"}{" "}
           <Ionicons
             size={22}
@@ -136,11 +143,13 @@ const statsComponent = (props) => {
           <Ionicons size={22} name="swap-horizontal" />
         </TouchableOpacity>
       </View>
-      <Text style={{ fontSize: 18, marginLeft: 5, marginTop: 5 }}>
+      <Text
+        style={{ fontSize: 18, marginLeft: 5, color: "#393e46", marginTop: 5 }}
+      >
         Rs. {monthlyHeader ? monthlySpent : monthlyReceived}
       </Text>
       <View style={[styles.content, { marginTop: 20 }]}>
-        <Text style={{ fontSize: 18 }}>
+        <Text style={{ color: "#393e46", fontSize: 18 }}>
           <Ionicons
             color="#2dea8f"
             size={18}
@@ -148,16 +157,30 @@ const statsComponent = (props) => {
           />{" "}
           Total Received
         </Text>
-        <Text style={{ fontSize: 18 }}>
+        <Text style={{ color: "#393e46", fontSize: 18 }}>
           Total Spent{" "}
           <Ionicons color="#f85f73" size={18} name="arrow-up-circle-outline" />
         </Text>
       </View>
       <View style={[styles.content, { marginBottom: 15 }]}>
-        <Text style={{ fontSize: 15, marginLeft: 5, textAlign: "left" }}>
+        <Text
+          style={{
+            fontSize: 15,
+            color: "#393e46",
+            marginLeft: 5,
+            textAlign: "left",
+          }}
+        >
           Rs. {monthlyReceived}
         </Text>
-        <Text style={{ fontSize: 15, marginRight: 5, textAlign: "right" }}>
+        <Text
+          style={{
+            fontSize: 15,
+            color: "#393e46",
+            marginRight: 5,
+            textAlign: "right",
+          }}
+        >
           Rs. {monthlySpent}
         </Text>
       </View>

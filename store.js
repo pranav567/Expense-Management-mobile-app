@@ -1,4 +1,10 @@
 // store.js
+
+//cardmodal
+//transactionmodal
+//1st transaction to avoid showing home description
+//security pin
+
 import { configureStore, createSlice, combineReducers } from "@reduxjs/toolkit";
 
 // Define the initial state and reducer

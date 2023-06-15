@@ -185,7 +185,7 @@ const RecentTransactions = (props) => {
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-        <Text style={{ fontSize: 22, color: "#393e46" }}>
+        <Text style={{ fontSize: 22, color: "#393e46", fontWeight: "bold" }}>
           Transaction History
         </Text>
         <TouchableOpacity
