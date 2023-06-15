@@ -6,24 +6,6 @@ import app from "../firebaseConfig";
 import { setLogoutModal } from "../store";
 import { useSelector, useDispatch } from "react-redux";
 
-const styles = StyleSheet.create({
-  container: {
-    position: "absolute",
-    backgroundColor: "white",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 70, // Adjust the height as per your requirement
-    borderBottomRightRadius: 20,
-    borderBottomLeftRadius: 20,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    padding: 15,
-    paddingTop: 28,
-  },
-});
-
 const Header = (props) => {
   // const logoutModal = useSelector((state) => state.logoutModal.logoutModal);
   //   console.log(cardProfileModal);
@@ -48,6 +30,25 @@ const Header = (props) => {
     // }
     // updateLogoutModal();
   };
+
+  const styles = StyleSheet.create({
+    container: {
+      position: "absolute",
+      backgroundColor: "white",
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 70, // Adjust the height as per your requirement
+      borderBottomRightRadius: 30,
+      borderBottomLeftRadius: 30,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      padding: 15,
+      paddingTop: 28,
+    },
+  });
+
   return (
     <View style={styles.container}>
       <Text

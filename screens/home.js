@@ -86,7 +86,7 @@ const Home = ({ navigation }) => {
       height: 160,
     },
     innerContainer: {
-      // margin: 30,
+      margin: 20,
       marginTop: 90,
       height: "78%",
       // marginBottom: 60,
