@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useEffect } from "react";
 import { useState } from "react";
 import { TouchableOpacity } from "react-native";
-import { Text, View, StyleSheet, ScrollView } from "react-native";
+import { Text, View, Image, StyleSheet, ScrollView } from "react-native";
 import app from "../firebaseConfig";
 import { getFirestore, doc, onSnapshot } from "firebase/firestore";
 import { useSelector, useDispatch } from "react-redux";
@@ -20,7 +20,7 @@ const RecentTransactions = (props) => {
     let newObj = {
       amount: obj.amount,
       description: obj.description,
-      date: getFormattedDate(obj.date),
+      date: handleDate(obj.date),
       transactionType: obj.transactionType,
     };
     // console.log(newObj);
@@ -66,203 +66,228 @@ const RecentTransactions = (props) => {
     // const formattedTime = `${hours}:${minutes} ${meridiem}`;
   };
 
+  const handleDate = (dateObj) => {
+    const currentDate = new Date();
+
+    // Format the date
+    const day = String(currentDate.getDate()).padStart(2, "0");
+    const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+    const year = String(currentDate.getFullYear());
+
+    const formattedDate = `${day}/${month}/${year}`;
+    const transactionDate = getFormattedDate(dateObj);
+    if (formattedDate == transactionDate) return "Today";
+    else {
+      let date1 = parseInt(day);
+      let date2 = parseInt(transactionDate.slice(0, 2));
+      if (date1 - date2 == 1) return "Yesterday";
+      else return transactionDate;
+    }
+  };
+
+  const handleImagePath = (type) => {
+    let imagePath = "";
+    if (type == "Bank") imagePath = require("../assets/bank.png");
+    else if (type == "Transportation") {
+      let imgObj = {
+        1: require("../assets/metro.png"),
+        2: require("../assets/bus.png"),
+        3: require("../assets/train.png"),
+      };
+      imagePath = imgObj[Math.floor(Math.random() * 3) + 1];
+    } else imagePath = require("../assets/randomCard.png");
+
+    return imagePath;
+  };
+
   // console.log(getFormattedDate(transactions[0].date));
 
   const styles = StyleSheet.create({
     container: {
-      margin: 5,
+      // margin: 5,
       marginTop: 10,
       padding: 10,
+      paddingLeft: 5,
+      paddingRight: 5,
     },
     headerRow: {
       padding: 5,
+      paddingLeft: 10,
+      paddingRight: 10,
       flexDirection: "row",
       justifyContent: "space-between",
     },
-    innerContainer: { padding: 10, paddingTop: 0, paddingLeft: 5 },
+    transactionContainer: {
+      padding: 10,
+      // width: "100%",
+    },
     transaction: {
-      flexDirection: "column",
-      backgroundColor: "#f5f5f5",
-      //#f5f5f5
-      margin: 8,
-      //   width: 220,
-      minWidth: 180,
-      height: 110,
-      padding: 15,
+      flexDirection: "row",
+      justifyContent: "flex-start",
+      margin: 5,
+      // backgroundColor: "#f5f5f5",
+      padding: 5,
       borderRadius: 15,
-      paddingRight: 20,
-      paddingLeft: 20,
-      borderWidth: 1,
-      borderColor: "#393e46",
     },
-    radio: {
-      width: 15,
-      height: 15,
+    image: {
+      width: 50,
+      height: 60,
+      // paddingRight: 5,
+      width: "18%",
       borderRadius: 20,
-      //   borderWidth: 1,
-      marginTop: 5,
     },
+    content: {
+      flexDirection: "row",
+      justifyContent: "flex-start",
+      width: "82%",
+    },
+    content1: {
+      flexDirection: "column",
+      justifyContent: "flex-start",
+      backgroundColor: "yellow",
+      width: "65%",
+      paddingLeft: 20,
+      paddingRight: 10,
+    },
+    content2: {
+      flexDirection: "column",
+      justifyContent: "center",
+      backgroundColor: "green",
+      width: "35%",
+      paddingLeft: 10,
+      paddingRight: 10,
+    },
+    // innerContainer: { padding: 10, paddingTop: 0, paddingLeft: 5 },
+    // transaction: {
+    //   flexDirection: "column",
+    //   backgroundColor: "#f5f5f5",
+    //   //#f5f5f5
+    //   margin: 8,
+    //   //   width: 220,
+    //   minWidth: 180,
+    //   height: 110,
+    //   padding: 15,
+    //   borderRadius: 15,
+    //   paddingRight: 20,
+    //   paddingLeft: 20,
+    //   borderWidth: 1,
+    //   borderColor: "#393e46",
+    // },
+    // radio: {
+    //   width: 15,
+    //   height: 15,
+    //   borderRadius: 20,
+    //   //   borderWidth: 1,
+    //   marginTop: 5,
+    // },
   });
 
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <Text style={{ fontSize: 22, color: "#393e46" }}>
-          Recent Transactions
+          Transaction History
         </Text>
-        {transactions.length < 6 ? (
-          <TouchableOpacity
-            onPress={() => {
-              navigation.navigate("All Transactions", { docId: props.docId });
-            }}
-          >
-            <Ionicons
-              name="arrow-forward-circle-outline"
-              size={28}
-              color="#393e46"
-            />
-          </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate("All Transactions", { docId: props.docId });
+          }}
+        >
+          <Text style={{ marginTop: 8 }}>show all</Text>
+        </TouchableOpacity>
+      </View>
+      <View style={styles.transactionContainer}>
+        {transactions.length > 0 ? (
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {transactions.slice(0, 4).map((obj, id) => (
+              <View key={id}>
+                <TouchableOpacity
+                  onPress={() => {
+                    updateTransactionModal(obj);
+                  }}
+                  style={styles.transaction}
+                >
+                  <Image
+                    source={handleImagePath(obj.description)}
+                    style={styles.image}
+                  />
+                  <View style={styles.content}>
+                    <View style={styles.content1}>
+                      <Text
+                        style={{
+                          textAlign: "left",
+                          paddingTop: 5,
+                          fontSize: 15,
+                          fontWeight: "bold",
+                          color: "#393e46",
+                        }}
+                      >
+                        {obj.description}
+                      </Text>
+
+                      <Text
+                        style={{
+                          textAlign: "left",
+                          marginTop: 5,
+                          color: "#393e46",
+                          textTransform: "capitalize",
+                        }}
+                      >
+                        {handleDate(obj.date)}
+                      </Text>
+                    </View>
+
+                    <View style={styles.content2}>
+                      <Text
+                        style={{
+                          textAlign: "right",
+                          paddingRight: 5,
+                          marginTop: 5,
+                          color: "#393e46",
+                        }}
+                      >
+                        {obj.transactionType == "Received" ? (
+                          <Text
+                            style={{
+                              fontSize: 18,
+                              color: "#2dea8f",
+                              fontWeight: "bold",
+                            }}
+                          >
+                            + {obj.amount}
+                          </Text>
+                        ) : obj.transactionType == "Spent" ? (
+                          <Text
+                            style={{
+                              fontSize: 18,
+                              color: "#f85f73",
+                              fontWeight: "bold",
+                            }}
+                          >
+                            - {obj.amount}
+                          </Text>
+                        ) : (
+                          <Text
+                            style={{
+                              fontSize: 18,
+                              color: "#51adcf",
+                              fontWeight: "bold",
+                            }}
+                          >
+                            {obj.amount}
+                          </Text>
+                        )}
+                      </Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
         ) : (
           <></>
         )}
-      </View>
-      <View style={styles.innerContainer}>
-        {transactions.length == 0 ? (
-          <Text>No data</Text>
-        ) : transactions.length < 6 ? (
-          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-            {transactions.map((obj, id) => (
-              <TouchableOpacity
-                onPress={() => {
-                  updateTransactionModal(obj);
-                }}
-                key={id}
-                style={[
-                  styles.transaction,
-                  {
-                    marginLeft: id == 0 ? 0 : 8,
-                  },
-                ]}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    marginBottom: 10,
-                  }}
-                >
-                  <Text style={{ fontSize: 20, color: "#393e46" }}>
-                    Rs. {obj.amount}
-                  </Text>
-                  <View
-                    style={[
-                      styles.radio,
-                      {
-                        backgroundColor:
-                          obj.transactionType == "Received"
-                            ? "#2dea8f"
-                            : obj.transactionType == "Spent"
-                            ? "#f85f73"
-                            : "#51adcf",
-                      },
-                    ]}
-                  ></View>
-                </View>
-
-                <Text
-                  style={{ fontSize: 14, marginBottom: 2, color: "#393e46" }}
-                >
-                  {/* {String(obj.date.getDate())} */}
-                  {getFormattedDate(obj.date)}
-                </Text>
-                <Text style={{ fontSize: 14, color: "#393e46" }}>
-                  {obj.description}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        ) : (
-          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-            {transactions.slice(0, 5).map((obj, id) => (
-              <TouchableOpacity
-                onPress={() => {
-                  updateTransactionModal(obj);
-                }}
-                key={id}
-                style={[
-                  styles.transaction,
-                  {
-                    marginLeft: id == 0 ? 0 : 8,
-                  },
-                ]}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    marginBottom: 10,
-                  }}
-                >
-                  <Text style={{ fontSize: 20, color: "#393e46" }}>
-                    Rs. {obj.amount}
-                  </Text>
-                  <View
-                    style={[
-                      styles.radio,
-                      {
-                        backgroundColor:
-                          obj.transactionType == "Received"
-                            ? "#2dea8f"
-                            : obj.transactionType == "Spent"
-                            ? "#f85f73"
-                            : "#51adcf",
-                      },
-                    ]}
-                  ></View>
-                </View>
-
-                <Text
-                  style={{ fontSize: 14, marginBottom: 2, color: "#393e46" }}
-                >
-                  {/* {String(obj.date.getDate())} */}
-                  {getFormattedDate(obj.date)}
-                </Text>
-                <Text style={{ fontSize: 14, color: "#393e46" }}>
-                  {obj.description}
-                </Text>
-              </TouchableOpacity>
-            ))}
-            <View
-              key={5}
-              style={[
-                styles.transaction,
-                {
-                  marginLeft: 8,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  backgroundColor: "transparent",
-                  borderWidth: 0,
-                  minWidth: 50,
-                  paddingRight: 0,
-                },
-              ]}
-            >
-              <TouchableOpacity
-                onPress={() => {
-                  navigation.navigate("All Transactions", {
-                    docId: props.docId,
-                  });
-                }}
-              >
-                <Ionicons
-                  name="arrow-forward-circle-outline"
-                  size={50}
-                  color="#8B8080"
-                />
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-        )}
+        <ScrollView showsVerticalScrollIndicator={false}></ScrollView>
       </View>
     </View>
   );

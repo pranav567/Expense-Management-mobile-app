@@ -73,6 +73,24 @@ const TransactionModal = () => {
 
     // const formattedTime = `${hours}:${minutes} ${meridiem}`;
   };
+  const handleDate = (dateObj) => {
+    const currentDate = new Date();
+
+    // Format the date
+    const day = String(currentDate.getDate()).padStart(2, "0");
+    const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+    const year = String(currentDate.getFullYear());
+
+    const formattedDate = `${day}/${month}/${year}`;
+    const transactionDate = getFormattedDate(dateObj);
+    if (formattedDate == transactionDate) return "Today";
+    else {
+      let date1 = parseInt(day);
+      let date2 = parseInt(transactionDate.slice(0, 2));
+      if (date1 - date2 == 1) return "Yesterday";
+      else return transactionDate;
+    }
+  };
 
   return (
     <TouchableOpacity
@@ -85,12 +103,24 @@ const TransactionModal = () => {
         <View style={styles.header}>
           <Text
             style={{
-              color: "#393e46",
+              color:
+                transactionModal.transactionType == "Received"
+                  ? "#2dea8f"
+                  : transactionModal.transactionType == "Spent"
+                  ? "#f85f73"
+                  : "#51adcf",
               fontSize: 20,
               fontWeight: "bold",
               textTransform: "capitalize",
             }}
           >
+            <Text>
+              {transactionModal.transactionType == "Received"
+                ? "+ "
+                : transactionModal.transactionType == "Spent"
+                ? "- "
+                : ""}
+            </Text>
             Rs. {transactionModal.amount}
           </Text>
         </View>

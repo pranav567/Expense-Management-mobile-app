@@ -59,6 +59,8 @@ const AddTransaction = ({ navigation }) => {
   const [transactions, setTransactions] = useState([]);
   const [docId, setDocId] = useState("");
   const [domains, setDomains] = useState([]);
+  const [receive, setReceive] = useState("");
+  const [spent, setSpent] = useState("");
 
   const logoutModal = useSelector((state) => state.logoutModal.logoutModal);
 
@@ -114,6 +116,8 @@ const AddTransaction = ({ navigation }) => {
           setDocId(doc.id);
           setCardsList(dataUser.cards);
           setTransactions(dataUser.transactions);
+          setSpent(dataUser.expenditure);
+          setReceive(dataUser.received);
           // console.log(userData);
         } else {
           // No matching document found
@@ -247,12 +251,21 @@ const AddTransaction = ({ navigation }) => {
                 }
               }
             }
+            let fieldsToUpdate =
+              transactionType == "Received"
+                ? {
+                    transactions: transactions,
+                    cards: arr,
+                    received: parseFloat(receive) + parseFloat(amountInvolved),
+                  }
+                : {
+                    transactions: transactions,
+                    cards: arr,
+                    expenditure: parseFloat(spent) + parseFloat(amountInvolved),
+                  };
             try {
               const documentRef = doc(firestore, "users", docId);
-              await updateDoc(documentRef, {
-                transactions: transactions,
-                cards: arr,
-              });
+              await updateDoc(documentRef, fieldsToUpdate);
               // setCardsData(arr);
               Toast.show({
                 type: "success",

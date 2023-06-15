@@ -59,6 +59,8 @@ const Register = ({ navigation }) => {
           uid: user.uid,
           transactions: [],
           cards: [],
+          expenditure: 0,
+          received: 0,
         });
 
         // console.log("User data stored in Firestore.");
