@@ -14,7 +14,7 @@ import Security from "../components/security";
 import app from "../firebaseConfig";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import CardModal from "../components/cardModal";
-
+// import SecurityPin from "../components/securityPin";
 import LogoutModal from "../components/logoutModal";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -89,6 +89,7 @@ const Profile = ({ navigation }) => {
     (state) => state.cardProfileModal.cardProfileModal
   );
   const logoutModal = useSelector((state) => state.logoutModal.logoutModal);
+  // const securityCode = useSelector((state) => state.securityCode.securityCode);
   // console.log(cardProfileModal);
 
   const styles = StyleSheet.create({
@@ -97,16 +98,14 @@ const Profile = ({ navigation }) => {
       justifyContent: "center",
       alignItems: "center",
     },
-    image: {
-      width: 160,
-      height: 160,
-    },
     contentContainer: {
       flex: 1,
       justifyContent: "flex-start",
       width: "90%",
       marginTop: 90,
       marginBottom: 65,
+
+      backgroundColor: "white",
     },
     security: {},
     cards: {},
@@ -130,8 +129,25 @@ const Profile = ({ navigation }) => {
           {userData !== null && docid !== "" ? (
             <>
               <PersonalData name={userData.name} email={userData.email} />
-              {/* <Security /> */}
+
+              <View
+                style={{
+                  borderTopWidth: 1,
+                  margin: 20,
+                  borderTopColor: "#d4d4d6",
+                  // width: "60%",
+                }}
+              ></View>
               <Cards cards={userData.cards} docId={docid} />
+              <View
+                style={{
+                  borderTopWidth: 1,
+                  margin: 20,
+                  borderTopColor: "#d4d4d6",
+                  // width: "60%",
+                }}
+              ></View>
+              <Security />
             </>
           ) : (
             <></>
@@ -142,6 +158,7 @@ const Profile = ({ navigation }) => {
       <BottomNavigator buttonActive="profile" />
       {cardProfileModal !== null ? <CardModal /> : <></>}
       {logoutModal ? <LogoutModal /> : <></>}
+      {/* {!securityCode ? <SecurityPin /> : <></>} */}
     </View>
   );
 };

@@ -292,13 +292,12 @@ const Cards = (props) => {
 
   const styles = StyleSheet.create({
     cards: {
-      marginTop: 40,
       width: "100%",
       // backgroundColor: "#d1f6c1",
-      backgroundColor: "white",
-      borderWidth: 1,
-      borderColor: "#d3d6db",
-      borderRadius: 10,
+      // backgroundColor: "white",
+      // borderWidth: 1,
+      // borderColor: "#d3d6db",
+      // borderRadius: 10,
       padding: 20,
       justifyContent: "flex-start",
       // height: 400,

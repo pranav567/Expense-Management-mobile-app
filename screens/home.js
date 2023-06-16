@@ -42,7 +42,7 @@ const Home = ({ navigation }) => {
   const auth = getAuth(app);
   const firestore = getFirestore(app);
   const [docId, setDocId] = useState("");
-  const [transactionPresent, setTransactionPresent] = useState(false);
+  const [transactionPresent, setTransactionPresent] = useState(0);
   const transactionModal = useSelector(
     (state) => state.transactionModal.transactionModal
   );
@@ -78,7 +78,8 @@ const Home = ({ navigation }) => {
           const doc = querySnapshot.docs[0];
           // Handle the matching document
           const dataUser = doc.data();
-          if (dataUser.transactions.length > 0) setTransactionPresent(true);
+          if (dataUser.transactions.length > 0) setTransactionPresent(2);
+          else setTransactionPresent(1);
           setDocId(doc.id);
         } else {
           navigation.navigate("Login");
@@ -120,10 +121,10 @@ const Home = ({ navigation }) => {
       <View
         style={[
           styles.innerContainer,
-          { justifyContent: transactionPresent ? "flex-start" : "center" },
+          { justifyContent: transactionPresent == 2 ? "flex-start" : "center" },
         ]}
       >
-        {transactionPresent ? (
+        {transactionPresent == 2 ? (
           <ScrollView showsVerticalScrollIndicator={false}>
             <View style={{ flexDirection: "column" }}>
               {docId !== "" ? <StatsComponent docId={docId} /> : <></>}
@@ -140,7 +141,7 @@ const Home = ({ navigation }) => {
               {docId !== "" ? <RecentTransactions docId={docId} /> : <></>}
             </View>
           </ScrollView>
-        ) : (
+        ) : transactionPresent == 1 ? (
           <View style={styles.welcome}>
             <Text
               style={{
@@ -204,6 +205,8 @@ const Home = ({ navigation }) => {
               Happy Spending !! &#x1F607;
             </Text>
           </View>
+        ) : (
+          <></>
         )}
       </View>
       <BottomNavigator buttonActive="home" />

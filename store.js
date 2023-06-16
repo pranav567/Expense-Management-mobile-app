@@ -53,10 +53,26 @@ const LogoutModalSlice = createSlice({
   },
 });
 
+const initialSecurityCodeState = {
+  securityCode: false,
+  // transactionCardModal: null,
+};
+
+const SecurityCodeSlice = createSlice({
+  name: "securityCode",
+  initialState: initialSecurityCodeState,
+  reducers: {
+    setSecurityCode: (state, action) => {
+      state.securityCode = action.payload;
+    },
+  },
+});
+
 const rootReducer = combineReducers({
   cardProfileModal: CardProfileModalSlice.reducer,
   transactionModal: TransactionModalSlice.reducer,
   logoutModal: LogoutModalSlice.reducer,
+  securityCode: SecurityCodeSlice.reducer,
 });
 
 // Create the Redux store
@@ -67,4 +83,5 @@ const store = configureStore({
 export const { setCardProfileModal } = CardProfileModalSlice.actions;
 export const { setTransactionModal } = TransactionModalSlice.actions;
 export const { setLogoutModal } = LogoutModalSlice.actions;
+export const { setSecurityCode } = SecurityCodeSlice.actions;
 export default store;
