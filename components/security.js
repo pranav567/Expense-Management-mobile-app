@@ -63,7 +63,7 @@ const Security = () => {
         const pin = await AsyncStorage.getItem("storedPin");
         if (pin == null) setCheckPin(0);
         else {
-          setCheckPin(2);
+          setCheckPin(1);
           setPinStored(pin);
         }
       } catch (error) {
@@ -381,7 +381,7 @@ const Security = () => {
                   borderRadius: 20,
                 }}
               >
-                <Text>{pinStored}</Text>
+                <Text>Change</Text>
               </TouchableOpacity>
             </View>
           </View>

@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import Toast from "react-native-toast-message";
 import { useNavigation } from "@react-navigation/native";
-import { getAuth } from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import app from "../firebaseConfig";
 // import ExpoBlurView from "expo-blur";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -18,11 +18,18 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 
 import { useSelector, useDispatch } from "react-redux";
-import { setSecurityCode } from "../store";
+import { setCredentials, setSecurityCode } from "../store";
 import { useState } from "react";
 import { useRef } from "react";
 
 const SecurityPin = () => {
+  const credentials = useSelector((state) => state.securityCode.credentials);
+  const securityCode = useSelector((state) => state.securityCode.securityCode);
+
+  const dispatch = useDispatch();
+
+  const updateSecurityCode = () => {};
+
   const inputRef1 = useRef(null);
   const inputRef2 = useRef(null);
   const inputRef3 = useRef(null);
@@ -31,27 +38,42 @@ const SecurityPin = () => {
   const navigation = useNavigation();
 
   const auth = getAuth(app);
-  //   const securityCode = useSelector((state) => state.securityCode.securityCode);
-  //   console.log(cardProfileModal);
-  const dispatch = useDispatch();
-
-  const updateSecurityCode = () => {
-    dispatch(setSecurityCode(false));
-  };
 
   const [field1, setField1] = useState("");
   const [field2, setField2] = useState("");
   const [field3, setField3] = useState("");
   const [field4, setField4] = useState("");
 
-  const checkPin = async () => {
-    const pin = field1 + field2 + field3 + field4;
+  const checkPin = async (fieldLast) => {
+    const pin = field1 + field2 + field3 + fieldLast;
     try {
-      const storedPin = "4526";
-      //   const storedPin = await AsyncStorage.getItem("storedPin");
+      // const storedPin = "4526";
+      const storedPin = await AsyncStorage.getItem("storedPin");
       if (storedPin !== null) {
         if (pin === storedPin) {
-          updateSecurityCode();
+          try {
+            const { user } = await signInWithEmailAndPassword(
+              auth,
+              credentials.username,
+              credentials.password
+            );
+            navigation.navigate("Home");
+
+            dispatch(setSecurityCode(false));
+            dispatch(setCredentials(null));
+          } catch (error) {
+            Toast.show({
+              type: "error",
+              text1: "Sign-In Error",
+              text2: "Invalid Credentials!",
+              position: "bottom",
+              visibilityTime: 4000,
+              autoHide: true,
+            });
+
+            dispatch(setSecurityCode(false));
+            dispatch(setCredentials(null));
+          }
         } else {
           setField1("");
           setField2("");
@@ -227,11 +249,12 @@ const SecurityPin = () => {
               onChangeText={(e) => {
                 const num = e.replace(/[^0-9]/g, "");
                 setField4(num);
+                if (num.length > 0) checkPin(num);
               }}
               placeholder="x"
-              onSubmitEditing={() => {
-                checkPin();
-              }}
+              // onSubmitEditing={() => {
+
+              // }}
             />
           </View>
         </View>

@@ -55,6 +55,7 @@ const LogoutModalSlice = createSlice({
 
 const initialSecurityCodeState = {
   securityCode: false,
+  credentials: null,
   // transactionCardModal: null,
 };
 
@@ -64,6 +65,9 @@ const SecurityCodeSlice = createSlice({
   reducers: {
     setSecurityCode: (state, action) => {
       state.securityCode = action.payload;
+    },
+    setCredentials: (state, action) => {
+      state.credentials = action.payload;
     },
   },
 });
@@ -83,5 +87,5 @@ const store = configureStore({
 export const { setCardProfileModal } = CardProfileModalSlice.actions;
 export const { setTransactionModal } = TransactionModalSlice.actions;
 export const { setLogoutModal } = LogoutModalSlice.actions;
-export const { setSecurityCode } = SecurityCodeSlice.actions;
+export const { setSecurityCode, setCredentials } = SecurityCodeSlice.actions;
 export default store;
