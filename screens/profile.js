@@ -148,6 +148,14 @@ const Profile = ({ navigation }) => {
                 }}
               ></View>
               <Security />
+              <View
+                style={{
+                  borderTopWidth: 1,
+                  margin: 20,
+                  borderTopColor: "#d4d4d6",
+                  // width: "60%",
+                }}
+              ></View>
             </>
           ) : (
             <></>
