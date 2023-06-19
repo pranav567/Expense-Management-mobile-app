@@ -60,7 +60,7 @@ const LogoutModal = () => {
     try {
       await auth.signOut();
       dispatch(setLogoutModal(false));
-      navigation.replace("Login");
+      navigation.replace("Landing");
       // User has been logged out successfully
       // You can perform any necessary actions here
     } catch (error) {

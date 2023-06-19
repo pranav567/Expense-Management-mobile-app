@@ -4,6 +4,7 @@
 //transactionmodal
 //1st transaction to avoid showing home description
 //security pin
+//lock app
 
 import { configureStore, createSlice, combineReducers } from "@reduxjs/toolkit";
 
@@ -55,7 +56,6 @@ const LogoutModalSlice = createSlice({
 
 const initialSecurityCodeState = {
   securityCode: false,
-  credentials: null,
   // transactionCardModal: null,
 };
 
@@ -66,8 +66,19 @@ const SecurityCodeSlice = createSlice({
     setSecurityCode: (state, action) => {
       state.securityCode = action.payload;
     },
-    setCredentials: (state, action) => {
-      state.credentials = action.payload;
+  },
+});
+
+const initialLockAppState = {
+  lockApp: false,
+};
+
+const LockAppSlice = createSlice({
+  name: "lockApp",
+  initialState: initialLockAppState,
+  reducers: {
+    setLockApp: (state, action) => {
+      state.lockApp = action.payload;
     },
   },
 });
@@ -77,6 +88,7 @@ const rootReducer = combineReducers({
   transactionModal: TransactionModalSlice.reducer,
   logoutModal: LogoutModalSlice.reducer,
   securityCode: SecurityCodeSlice.reducer,
+  lockApp: LockAppSlice.reducer,
 });
 
 // Create the Redux store
@@ -87,5 +99,6 @@ const store = configureStore({
 export const { setCardProfileModal } = CardProfileModalSlice.actions;
 export const { setTransactionModal } = TransactionModalSlice.actions;
 export const { setLogoutModal } = LogoutModalSlice.actions;
-export const { setSecurityCode, setCredentials } = SecurityCodeSlice.actions;
+export const { setSecurityCode } = SecurityCodeSlice.actions;
+export const { setLockApp } = LockAppSlice.actions;
 export default store;

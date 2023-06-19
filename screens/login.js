@@ -11,11 +11,15 @@ import { Ionicons } from "@expo/vector-icons";
 import app from "../firebaseConfig";
 import Toast from "react-native-toast-message";
 
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+} from "firebase/auth";
 import { useSelector, useDispatch } from "react-redux";
 import SecurityPin from "../components/securityPin";
 
-import { setSecurityCode, setCredentials } from "../store";
+import { setSecurityCode } from "../store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Login = ({ navigation }) => {
@@ -34,7 +38,7 @@ const Login = ({ navigation }) => {
   useEffect(() => {
     try {
       const login = async () => {
-        const auth = getAuth();
+        const auth = getAuth(app);
         const { user } = await signInWithEmailAndPassword(
           auth,
           "pranavpn7@gmail.com",
@@ -43,6 +47,11 @@ const Login = ({ navigation }) => {
         // User successfully logged in, you can now proceed with further actions
         // console.log("User logged in:", user);
         navigation.navigate("Home");
+        // onAuthStateChanged(auth, (user) => {
+        //   if (user) {
+        //     navigation.navigate("Home");
+        //   }
+        // });
       };
 
       login();
@@ -51,35 +60,25 @@ const Login = ({ navigation }) => {
 
   const handleLogin = async () => {
     try {
-      const pin = await AsyncStorage.getItem("storedPin");
-      if (pin == null) {
-        try {
-          const auth = getAuth();
-          const { user } = await signInWithEmailAndPassword(
-            auth,
-            username,
-            password
-          );
-          // User successfully logged in, you can now proceed with further actions
-          // console.log("User logged in:", user);
-          navigation.navigate("Home");
-        } catch (error) {
-          Toast.show({
-            type: "error",
-            text1: "Sign-In Error",
-            text2: "Invalid Credentials!",
-            position: "bottom",
-            visibilityTime: 4000,
-            autoHide: true,
-          });
-          // console.log("Login error:", error.message);
-        }
-      } else {
-        dispatch(setSecurityCode(true));
-        dispatch(setCredentials({ username: username, password: password }));
-      }
+      const auth = getAuth(app);
+      const { user } = await signInWithEmailAndPassword(
+        auth,
+        username,
+        password
+      );
+      // User successfully logged in, you can now proceed with further actions
+      // console.log("User logged in:", user);
+      navigation.navigate("Home");
     } catch (error) {
-      console.log(error);
+      Toast.show({
+        type: "error",
+        text1: "Sign-In Error",
+        text2: "Invalid Credentials!",
+        position: "bottom",
+        visibilityTime: 4000,
+        autoHide: true,
+      });
+      // console.log("Login error:", error.message);
     }
   };
 

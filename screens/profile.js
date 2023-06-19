@@ -48,7 +48,6 @@ const Profile = ({ navigation }) => {
             } else {
               // User is not logged in
               navigation.navigate("Login");
-              console.log("No user logged in");
               reject();
             }
           });

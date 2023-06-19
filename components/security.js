@@ -6,10 +6,13 @@ import {
   TextInput,
   View,
   StyleSheet,
+  Switch,
   TouchableOpacity,
 } from "react-native";
 import Toast from "react-native-toast-message";
 import { Picker } from "@react-native-picker/picker";
+import { useSelector, useDispatch } from "react-redux";
+import { setLockApp } from "../store";
 // import {  } from "react-native-web";
 
 const securityQuestions = [
@@ -43,6 +46,14 @@ const Security = () => {
   );
   const [answer, setAnswer] = useState("");
   const [forgotPin, setForgotPin] = useState(false);
+  // const [lockApp, setLockApp] = useState(false);
+
+  const dispatch = useDispatch();
+  const lockApp = useSelector((state) => state.lockApp.lockApp);
+
+  const updateLockApp = (val) => {
+    dispatch(setLockApp(val));
+  };
 
   const handleTogglePassword = () => {
     if (showPassword) {
@@ -514,6 +525,28 @@ const Security = () => {
                 alignItems: "center",
               }}
             >
+              <Text style={{ fontSize: 18 }}>Security Pin to open app</Text>
+              {/* <TouchableOpacity> */}
+              <Switch
+                trackColor={{ false: "#767577", true: "#f4f3f4" }}
+                thumbColor={lockApp ? "#69c181" : "#f4f3f4"}
+                ios_backgroundColor="#3e3e3e"
+                onValueChange={() => {
+                  updateLockApp(!lockApp);
+                }}
+                value={lockApp}
+                style={{ transform: [{ scaleX: 1.2 }, { scaleY: 1 }] }}
+              />
+              {/* </TouchableOpacity> */}
+            </View>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginTop: 10,
+              }}
+            >
               <Text style={{ fontSize: 18 }}>
                 Security Pin Set{" "}
                 <Ionicons name="checkmark-circle" color="#69c181" size={18} />
@@ -535,7 +568,7 @@ const Security = () => {
                   borderRadius: 20,
                 }}
               >
-                <Text>{pinStored}</Text>
+                <Text>Change</Text>
               </TouchableOpacity>
             </View>
           </View>

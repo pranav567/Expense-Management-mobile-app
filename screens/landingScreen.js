@@ -4,15 +4,40 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { useSelector, useDispatch } from "react-redux";
+import SecurityPin from "../components/securityPin";
+import { setSecurityCode } from "../store";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const LandingScreen = ({ navigation }) => {
+  const securityCode = useSelector((state) => state.securityCode.securityCode);
+  const lockApp = useSelector((state) => state.lockApp.lockApp);
+  const dispatch = useDispatch();
+
+  const nextPage = async () => {
+    try {
+      const pin = await AsyncStorage.getItem("storedPin");
+      if (pin == null || !lockApp) {
+        navigation.navigate("Login");
+      } else {
+        dispatch(setSecurityCode(true));
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
-    // <TouchableWithoutFeedback onPress={() => navigation.navigate("Login")}>
-    <TouchableWithoutFeedback>
-      <View style={styles.container}>
+    <View style={styles.container}>
+      <TouchableWithoutFeedback
+        onPress={() => {
+          nextPage();
+        }}
+      >
         <Image source={require("../assets/logo.png")} style={styles.image} />
-      </View>
-    </TouchableWithoutFeedback>
+      </TouchableWithoutFeedback>
+      {securityCode ? <SecurityPin /> : <></>}
+    </View>
   );
 };
 
