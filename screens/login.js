@@ -16,6 +16,7 @@ import { useSelector, useDispatch } from "react-redux";
 import SecurityPin from "../components/securityPin";
 
 import { setSecurityCode, setCredentials } from "../store";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Login = ({ navigation }) => {
   const securityCode = useSelector((state) => state.securityCode.securityCode);
@@ -30,48 +31,56 @@ const Login = ({ navigation }) => {
     setShowPassword(!showPassword);
   };
 
-  // useEffect(() => {
-  //   try {
-  //     const login = async () => {
-  //       const auth = getAuth();
-  //       const { user } = await signInWithEmailAndPassword(
-  //         auth,
-  //         "pranavpn7@gmail.com",
-  //         "Panda@123"
-  //       );
-  //       // User successfully logged in, you can now proceed with further actions
-  //       // console.log("User logged in:", user);
-  //       navigation.navigate("Home");
-  //     };
+  useEffect(() => {
+    try {
+      const login = async () => {
+        const auth = getAuth();
+        const { user } = await signInWithEmailAndPassword(
+          auth,
+          "pranavpn7@gmail.com",
+          "Panda@123"
+        );
+        // User successfully logged in, you can now proceed with further actions
+        // console.log("User logged in:", user);
+        navigation.navigate("Home");
+      };
 
-  //     login();
-  //   } catch (error) {}
-  // }, []);
+      login();
+    } catch (error) {}
+  }, []);
 
   const handleLogin = async () => {
-    dispatch(setSecurityCode(true));
-    dispatch(setCredentials({ username: username, password: password }));
-    // try {
-    //   const auth = getAuth();
-    //   const { user } = await signInWithEmailAndPassword(
-    //     auth,
-    //     username,
-    //     password
-    //   );
-    //   // User successfully logged in, you can now proceed with further actions
-    //   // console.log("User logged in:", user);
-    //   navigation.navigate("Home");
-    // } catch (error) {
-    //   Toast.show({
-    //     type: "error",
-    //     text1: "Sign-In Error",
-    //     text2: "Invalid Credentials!",
-    //     position: "bottom",
-    //     visibilityTime: 4000,
-    //     autoHide: true,
-    //   });
-    //   // console.log("Login error:", error.message);
-    // }
+    try {
+      const pin = await AsyncStorage.getItem("storedPin");
+      if (pin == null) {
+        try {
+          const auth = getAuth();
+          const { user } = await signInWithEmailAndPassword(
+            auth,
+            username,
+            password
+          );
+          // User successfully logged in, you can now proceed with further actions
+          // console.log("User logged in:", user);
+          navigation.navigate("Home");
+        } catch (error) {
+          Toast.show({
+            type: "error",
+            text1: "Sign-In Error",
+            text2: "Invalid Credentials!",
+            position: "bottom",
+            visibilityTime: 4000,
+            autoHide: true,
+          });
+          // console.log("Login error:", error.message);
+        }
+      } else {
+        dispatch(setSecurityCode(true));
+        dispatch(setCredentials({ username: username, password: password }));
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const styles = StyleSheet.create({

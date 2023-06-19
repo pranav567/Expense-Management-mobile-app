@@ -846,7 +846,7 @@ const AddTransaction = ({ navigation }) => {
           <View style={styles.describe}>
             <Text style={{ fontSize: 18, color: "#393e46" }}>
               Description{" "}
-              <Text style={{ fontSize: 15 }}>({wordCount}/20 words)</Text>
+              <Text style={{ fontSize: 15 }}>({wordCount}/20 letters)</Text>
               <Text style={{ color: "#E49393" }}>*</Text>
             </Text>
             <TextInput
