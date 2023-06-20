@@ -34,7 +34,7 @@ const LandingScreen = ({ navigation }) => {
           nextPage();
         }}
       >
-        <Image source={require("../assets/logo.png")} style={styles.image} />
+        <Image source={require("../assets/logo.jpeg")} style={styles.image} />
       </TouchableWithoutFeedback>
       {securityCode ? <SecurityPin /> : <></>}
     </View>
@@ -46,6 +46,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "white",
   },
   image: {
     width: 160,
