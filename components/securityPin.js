@@ -24,6 +24,8 @@ import { useState } from "react";
 import { useRef } from "react";
 import { useEffect } from "react";
 
+import CryptoJS from "crypto-js";
+
 const securityQuestions = [
   "Name your Favorite fictional character?",
   "Street name of your first home?",
@@ -57,6 +59,7 @@ const SecurityPin = () => {
   const [pinStorage, setPinStorage] = useState("");
   const [questionStorage, setQuestionStorage] = useState("");
   const [answerStorage, setAnswerStorage] = useState("");
+  const [saltStorage, setSaltStorage] = useState("");
 
   const [question, setQuestion] = useState(
     "Name your Favorite fictional character?"
@@ -64,15 +67,31 @@ const SecurityPin = () => {
   const [answer, setAnswer] = useState("");
 
   const [forgotPin, setForgotPin] = useState(false);
+  // Hash the PIN code using the salt
+  const hashValue = (val, salt) => {
+    const hashedValue = CryptoJS.SHA256(val + salt).toString();
+    return hashedValue;
+  };
+
+  // Verify the entered PIN against the stored hashed PIN
+  const verifyValue = (enteredVal, storedHashedValue, salt) => {
+    const enteredHashedValue = hashValue(enteredVal, salt);
+    return enteredHashedValue === storedHashedValue;
+  };
 
   useEffect(() => {
     const getVals = async () => {
       const storedPin = await AsyncStorage.getItem("storedPin");
-      setPinStorage(storedPin);
+      const { hashedPin, salt } = JSON.parse(storedPin);
+      setPinStorage(hashedPin);
+      // console.log(salt);
+      setSaltStorage(salt);
       const storedQuestion = await AsyncStorage.getItem("question");
-      setQuestionStorage(storedQuestion);
+      const { hashedQuestion } = JSON.parse(storedQuestion);
+      setQuestionStorage(hashedQuestion);
       const storedAnswer = await AsyncStorage.getItem("answer");
-      setAnswerStorage(storedAnswer);
+      const { hashedAnswer } = JSON.parse(storedAnswer);
+      setAnswerStorage(hashedAnswer);
     };
     getVals();
   }, []);
@@ -80,37 +99,34 @@ const SecurityPin = () => {
   const checkPin = async (fieldLast) => {
     const pin = field1 + field2 + field3 + fieldLast;
     try {
+      let verifyPin = verifyValue(pin, pinStorage, saltStorage);
+      let verifyQuest = verifyValue(question, questionStorage, saltStorage);
+      let verifyAns = verifyValue(answer, answerStorage, saltStorage);
       if (
-        pinStorage !== null &&
-        questionStorage !== "" &&
-        answerStorage !== ""
+        (!forgotPin && verifyPin) ||
+        (forgotPin && verifyQuest && verifyAns)
       ) {
-        if (
-          (!forgotPin && pin === pinStorage) ||
-          (forgotPin && question == questionStorage && answer == answerStorage)
-        ) {
-          dispatch(setSecurityCode(false));
-          onAuthStateChanged(auth, (user) => {
-            if (user) {
-              navigation.navigate("Home");
-            } else {
-              navigation.navigate("Login");
-            }
-          });
-        } else {
-          setField1("");
-          setField2("");
-          setField3("");
-          setField4("");
-          Toast.show({
-            type: "error",
-            text1: "Incorrect Question-Answer / Pin!",
-            text2: "Try again!",
-            position: "bottom",
-            visibilityTime: 4000,
-            autoHide: true,
-          });
-        }
+        dispatch(setSecurityCode(false));
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            navigation.navigate("Home");
+          } else {
+            navigation.navigate("Login");
+          }
+        });
+      } else {
+        setField1("");
+        setField2("");
+        setField3("");
+        setField4("");
+        Toast.show({
+          type: "error",
+          text1: "Incorrect Question-Answer / Pin!",
+          text2: "Try again!",
+          position: "bottom",
+          visibilityTime: 4000,
+          autoHide: true,
+        });
       }
     } catch (error) {
       Toast.show({

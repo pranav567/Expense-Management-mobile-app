@@ -606,7 +606,7 @@ const AddTransaction = ({ navigation }) => {
                   {cardsList.map((obj, id) => (
                     <Picker.Item
                       key={id}
-                      label={`${obj.cardName}-${obj.uniqueId}`}
+                      label={`${obj.cardName}`}
                       value={JSON.stringify(obj)}
                     />
                   ))}
@@ -632,7 +632,7 @@ const AddTransaction = ({ navigation }) => {
                   {cardsList.map((obj, id) => (
                     <Picker.Item
                       key={id}
-                      label={`${obj.cardName}-${obj.uniqueId}`}
+                      label={`${obj.cardName}-Rs.${obj.balance}`}
                       value={JSON.stringify(obj)}
                     />
                   ))}
@@ -661,7 +661,7 @@ const AddTransaction = ({ navigation }) => {
                   {cardsList.map((obj, id) => (
                     <Picker.Item
                       key={id}
-                      label={`${obj.cardName}-${obj.uniqueId}`}
+                      label={`${obj.cardName}-Rs.${obj.balance}`}
                       value={JSON.stringify(obj)}
                     />
                   ))}
@@ -806,7 +806,7 @@ const AddTransaction = ({ navigation }) => {
                   {cardsList.map((obj, id) => (
                     <Picker.Item
                       key={id}
-                      label={`${obj.cardName}-${obj.uniqueId}`}
+                      label={`${obj.cardName}-Rs.${obj.balance}`}
                       value={JSON.stringify(obj)}
                     />
                   ))}
@@ -828,7 +828,7 @@ const AddTransaction = ({ navigation }) => {
                   {cardsList.map((obj, id) => (
                     <Picker.Item
                       key={id}
-                      label={`${obj.cardName}-${obj.uniqueId}`}
+                      label={`${obj.cardName}-Rs.${obj.balance}`}
                       value={JSON.stringify(obj)}
                     />
                   ))}

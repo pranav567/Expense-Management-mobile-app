@@ -98,7 +98,7 @@ const CardComponent = (props) => {
   };
   return (
     <TouchableOpacity
-      onPress={() => updateCardProfileModal()}
+      // onPress={() => updateCardProfileModal()}
       style={styles.cardContainer}
     >
       {/* image box */}

@@ -13,6 +13,7 @@ import Toast from "react-native-toast-message";
 import { Picker } from "@react-native-picker/picker";
 import { useSelector, useDispatch } from "react-redux";
 import { setLockApp } from "../store";
+import CryptoJS from "crypto-js";
 // import {  } from "react-native-web";
 
 const securityQuestions = [
@@ -41,12 +42,31 @@ const Security = () => {
   const [answerStored, setAnswerStored] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showOldPassword, setShowOldPassword] = useState(false);
+  const [saltStored, setSaltStored] = useState("");
   const [selectedQuestion, setSelectedQuestion] = useState(
     "Name your Favorite fictional character?"
   );
   const [answer, setAnswer] = useState("");
   const [forgotPin, setForgotPin] = useState(false);
   // const [lockApp, setLockApp] = useState(false);
+
+  // Generate a random salt value
+  const generateSalt = () => {
+    let createSalt = CryptoJS.SHA256(Math.random().toString()).toString();
+    return createSalt;
+  };
+
+  // Hash the PIN code using the salt
+  const hashValue = (val, salt) => {
+    const hashedValue = CryptoJS.SHA256(val + salt).toString();
+    return hashedValue;
+  };
+
+  // Verify the entered PIN against the stored hashed PIN
+  const verifyValue = (enteredVal, storedHashedValue, salt) => {
+    const enteredHashedValue = hashValue(enteredVal, salt);
+    return enteredHashedValue === storedHashedValue;
+  };
 
   const dispatch = useDispatch();
   const lockApp = useSelector((state) => state.lockApp.lockApp);
@@ -96,12 +116,20 @@ const Security = () => {
         if (pin == null) setCheckPin(0);
         else {
           setCheckPin(1);
-          setPinStored(pin);
+          let { hashedPin, salt } = JSON.parse(pin);
+          setPinStored(hashedPin);
+          setSaltStored(salt);
         }
         const quest = await AsyncStorage.getItem("question");
         const ans = await AsyncStorage.getItem("answer");
-        if (quest !== null) setQuestionStored(quest);
-        if (ans !== null) setAnswerStored(ans);
+        if (quest !== null) {
+          let { hashedQuestion, salt } = JSON.parse(quest);
+          setQuestionStored(hashedQuestion);
+        }
+        if (ans !== null) {
+          let { hashedAnswer, salt } = JSON.parse(ans);
+          setAnswerStored(hashedAnswer);
+        }
       } catch (error) {
         console.log(error);
       }
@@ -113,12 +141,23 @@ const Security = () => {
     if (pinLength.length == 4) {
       if (selectedQuestion !== "" && answer !== "") {
         try {
-          const pinSetting = await AsyncStorage.setItem("storedPin", pinLength);
+          const salt = generateSalt();
+          const hashedPin = hashValue(pinLength, salt);
+          const hashedQuestion = hashValue(selectedQuestion, salt);
+          const hashedAnswer = hashValue(answer, salt);
+          const pinSetting = await AsyncStorage.setItem(
+            "storedPin",
+            JSON.stringify({ hashedPin, salt })
+          );
           const questionSetting = await AsyncStorage.setItem(
             "question",
-            selectedQuestion
+            JSON.stringify({ hashedQuestion, salt })
           );
-          const answerSetting = await AsyncStorage.setItem("answer", answer);
+          const answerSetting = await AsyncStorage.setItem(
+            "answer",
+            JSON.stringify({ hashedAnswer, salt })
+          );
+
           Toast.show({
             type: "success",
             text1: "New Security Pin Set!",
@@ -128,7 +167,10 @@ const Security = () => {
             autoHide: true,
           });
           setCheckPin(1);
-          setPinStored(pinLength);
+          setPinStored(hashedPin);
+          setQuestionStored(hashedQuestion);
+          setAnswerStored(hashedAnswer);
+          setSaltStored(salt);
           setShowPassword("");
           setEnterPin("");
           setPinLength("");
@@ -165,18 +207,27 @@ const Security = () => {
         (forgotPin && selectedQuestion !== "" && answer !== "")) &&
       pinLength.length == 4
     ) {
+      //verify both
+      let verifyPin = verifyValue(pinOldLength, pinStored, saltStored);
+      let verifyQuest = verifyValue(
+        selectedQuestion,
+        questionStored,
+        saltStored
+      );
+      let verifyAns = verifyValue(answer, answerStored, saltStored);
       if (
-        (!forgotPin && pinOldLength == pinStored) ||
-        (forgotPin &&
-          questionStored == selectedQuestion &&
-          answerStored == answer)
+        (!forgotPin && verifyPin) ||
+        (forgotPin && verifyQuest && verifyAns)
       ) {
-        if (
-          (!forgotPin && pinLength !== pinOldLength) ||
-          (forgotPin && pinStored !== pinLength)
-        ) {
+        verifyPin = verifyValue(pinLength, pinStored, saltStored);
+        if (!verifyPin) {
           try {
-            await AsyncStorage.setItem("storedPin", pinLength);
+            const hashedPin = hashValue(pinLength, saltStored);
+            let salt = saltStored;
+            const pinSetting = await AsyncStorage.setItem(
+              "storedPin",
+              JSON.stringify({ hashedPin, salt })
+            );
             Toast.show({
               type: "success",
               text1: "New Security Pin Set!",
