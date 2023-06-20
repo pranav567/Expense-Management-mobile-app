@@ -39,19 +39,19 @@ const Login = ({ navigation }) => {
     try {
       const login = async () => {
         const auth = getAuth(app);
-        const { user } = await signInWithEmailAndPassword(
-          auth,
-          "pranavpn7@gmail.com",
-          "Panda@123"
-        );
-        // User successfully logged in, you can now proceed with further actions
-        // console.log("User logged in:", user);
-        navigation.navigate("Home");
-        // onAuthStateChanged(auth, (user) => {
-        //   if (user) {
-        //     navigation.navigate("Home");
-        //   }
-        // });
+        // const { user } = await signInWithEmailAndPassword(
+        //   auth,
+        //   "pranavpn7@gmail.com",
+        //   "Panda@123"
+        // );
+        // // User successfully logged in, you can now proceed with further actions
+        // // console.log("User logged in:", user);
+        // navigation.navigate("Home");
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            navigation.navigate("Home");
+          }
+        });
       };
 
       login();

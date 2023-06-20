@@ -34,7 +34,7 @@ const LandingScreen = ({ navigation }) => {
           nextPage();
         }}
       >
-        <Image source={require("../assets/logo.jpeg")} style={styles.image} />
+        <Image source={require("../assets/logo.png")} style={styles.image} />
       </TouchableWithoutFeedback>
       {securityCode ? <SecurityPin /> : <></>}
     </View>
