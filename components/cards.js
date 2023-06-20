@@ -204,7 +204,7 @@ const Cards = (props) => {
   };
 
   const handleNewCard = async () => {
-    // console.log();
+    // console.log(selectedTypeofCard, cardName, balance, cardId);
     if (
       selectedTypeofCard !== "" &&
       cardName !== "" &&
@@ -220,7 +220,7 @@ const Cards = (props) => {
         };
         let arr = cardsData;
         arr.push(newCardData);
-        setSelectedTypeofCard("");
+        // setSelectedTypeofCard("");
         setCardId("");
         setCardName("");
         setBalance("");
@@ -335,11 +335,12 @@ const Cards = (props) => {
     },
     cardComponent: {
       flexDirection: "row",
-      marginTop: 15,
-      backgroundColor: "rgba(128, 128, 128, 0.1)",
+      // backgroundColor: "rgba(128, 128, 128, 0.1)",
       padding: 5,
       borderRadius: 10,
       justifyContent: "space-between",
+      // marginBottom: 10,
+      // borderBottomWidth: 1,
     },
   });
 
@@ -577,39 +578,58 @@ const Cards = (props) => {
       ) : (
         <View>
           {cardsData.map((obj, id) => (
-            <View key={id} style={styles.cardComponent}>
-              <CardComponent
-                type={obj.type}
-                cardName={obj.cardName}
-                uniqueId={obj.uniqueId}
-                balance={obj.balance}
-              />
-              {windowWidth < 405 ? (
-                <TouchableOpacity
-                  style={{ marginTop: 20, marginRight: 35 }}
-                  onPress={() => {
-                    handleCardRemoval(id);
+            <View key={id}>
+              <View
+                style={[styles.cardComponent, { marginTop: id == 0 ? 15 : 0 }]}
+              >
+                <CardComponent
+                  type={obj.type}
+                  cardName={obj.cardName}
+                  uniqueId={obj.uniqueId}
+                  balance={obj.balance}
+                />
+                {windowWidth < 405 ? (
+                  <TouchableOpacity
+                    style={{ marginTop: 20, marginRight: 35 }}
+                    onPress={() => {
+                      handleCardRemoval(id);
+                    }}
+                  >
+                    <Ionicons
+                      name="trash-bin-outline"
+                      color="#3d3931"
+                      size={24}
+                    />
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    style={{ marginTop: 20, marginRight: 35 }}
+                    onPress={() => {
+                      handleCardRemoval(id);
+                    }}
+                  >
+                    <Ionicons
+                      name="trash-bin-outline"
+                      color="#3d3931"
+                      size={24}
+                    />
+                  </TouchableOpacity>
+                )}
+              </View>
+              {id >= 0 && id < cardsData.length - 1 ? (
+                <View
+                  style={{
+                    borderBottomWidth: 1,
+                    // width: "60%",
+                    borderBottomColor: "#d4d4d6",
+                    margin: 20,
+                    marginRight: 30,
+                    marginLeft: 30,
+                    alignContent: "center",
                   }}
-                >
-                  <Ionicons
-                    name="trash-bin-outline"
-                    color="#3d3931"
-                    size={24}
-                  />
-                </TouchableOpacity>
+                ></View>
               ) : (
-                <TouchableOpacity
-                  style={{ marginTop: 20, marginRight: 35 }}
-                  onPress={() => {
-                    handleCardRemoval(id);
-                  }}
-                >
-                  <Ionicons
-                    name="trash-bin-outline"
-                    color="#3d3931"
-                    size={24}
-                  />
-                </TouchableOpacity>
+                <></>
               )}
             </View>
           ))}
