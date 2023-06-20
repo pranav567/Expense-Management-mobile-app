@@ -28,7 +28,9 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     justifyContent: "center",
   },
-  balance: { flexDirection: "row" },
+  balance: {
+    flexDirection: "row",
+  },
   cardId: { flexDirection: "row", justifyContent: "center", marginTop: 20 },
 });
 
@@ -149,7 +151,9 @@ const TransactionModal = () => {
                   textTransform: "capitalize",
                 }}
               >
-                {transactionModal.transactionType}
+                {transactionModal.transactionType == "Internal Transfer"
+                  ? "Int. Transfer"
+                  : transactionModal.transactionType}
               </Text>
             </View>
             <View style={styles.balance}>
