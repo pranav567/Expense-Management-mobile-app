@@ -298,6 +298,7 @@ const SecurityPin = () => {
                   }}
                   placeholder="x"
                   autoFocus={true}
+                  blurOnSubmit={false}
                 />
               </View>
               <View
@@ -327,6 +328,7 @@ const SecurityPin = () => {
                     }
                   }}
                   placeholder="x"
+                  blurOnSubmit={false}
                 />
               </View>
               <View
@@ -355,6 +357,7 @@ const SecurityPin = () => {
                     }
                   }}
                   placeholder="x"
+                  blurOnSubmit={false}
                 />
               </View>
               <View
