@@ -13,6 +13,7 @@ import Home from "./screens/home";
 import Profile from "./screens/profile";
 import AddTransaction from "./screens/addTransaction";
 import AllTransactions from "./screens/allTransactions";
+import TestDetails from "./screens/testDetails";
 
 export default function App() {
   return (
@@ -25,6 +26,11 @@ export default function App() {
             name="Landing"
             component={LandingScreen}
             options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="TestDetails"
+            component={TestDetails}
+            // options={{ headerShown: false }}
           />
           <Stack.Screen
             name="Login"

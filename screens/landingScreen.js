@@ -8,6 +8,7 @@ import { useSelector, useDispatch } from "react-redux";
 import SecurityPin from "../components/securityPin";
 import { setSecurityCode } from "../store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { checkTableExists } from "../queries";
 
 const LandingScreen = ({ navigation }) => {
   const securityCode = useSelector((state) => state.securityCode.securityCode);
@@ -18,7 +19,16 @@ const LandingScreen = ({ navigation }) => {
     try {
       const pin = await AsyncStorage.getItem("storedPin");
       if (pin == null || !lockApp) {
-        navigation.navigate("Login");
+        const db = SQLite.openDatabase("ExpenseManagement.db");
+        let tableExists = false;
+        await checkTableExists(db, "userDetails")
+          .then((res) => {
+            tableExists = res;
+          })
+          .catch((err) => {});
+
+        if (tableExists) navigation.navigate("Login");
+        else navigation.navigate("Register");
       } else {
         dispatch(setSecurityCode(true));
       }

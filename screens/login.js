@@ -10,6 +10,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import app from "../firebaseConfig";
 import Toast from "react-native-toast-message";
+import CryptoJS from "crypto-js";
 
 import {
   getAuth,
@@ -21,6 +22,13 @@ import SecurityPin from "../components/securityPin";
 
 import { setSecurityCode } from "../store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  checkEmailExists,
+  checkTableExists,
+  getSaltAndId,
+  loginUsingCreds,
+} from "../queries";
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 const Login = ({ navigation }) => {
   const securityCode = useSelector((state) => state.securityCode.securityCode);
@@ -31,56 +39,193 @@ const Login = ({ navigation }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [validPassword, setValidPassword] = useState(false);
 
+  const hashValue = (val, salt) => {
+    const hashedValue = CryptoJS.SHA256(val + salt).toString();
+    return hashedValue;
+  };
+
   const handleTogglePassword = () => {
     setShowPassword(!showPassword);
   };
 
+  // check whether there is userId in async storage then login
   useEffect(() => {
-    try {
-      const login = async () => {
-        const auth = getAuth(app);
-        // const { user } = await signInWithEmailAndPassword(
-        //   auth,
-        //   "pranavpn7@gmail.com",
-        //   "Panda@123"
-        // );
-        // // User successfully logged in, you can now proceed with further actions
-        // // console.log("User logged in:", user);
-        // navigation.navigate("Home");
-        onAuthStateChanged(auth, (user) => {
-          if (user) {
-            navigation.navigate("Home");
-          }
-        });
-      };
+    const checkLoggedIn = async () => {
+      const getUserId = await AsyncStorage.getItem("userId");
+      if (getUserId !== null) navigation.navigate("Home");
+    };
 
-      login();
-    } catch (error) {}
+    checkLoggedIn();
   }, []);
 
   const handleLogin = async () => {
-    try {
-      const auth = getAuth(app);
-      const { user } = await signInWithEmailAndPassword(
-        auth,
-        username,
-        password
-      );
-      // User successfully logged in, you can now proceed with further actions
-      // console.log("User logged in:", user);
-      navigation.navigate("Home");
-    } catch (error) {
+    const db = SQLite.openDatabase("ExpenseManagement.db");
+    if (username !== "" && password !== "") {
+      let tableExists = false;
+      await checkTableExists(db, "userDetails")
+        .then((exists) => {
+          tableExists = exists;
+        })
+        .catch((err) => {
+          tableExists = null;
+        });
+
+      if (tableExists == null) {
+        Toast.show({
+          type: "error",
+          text1: "Database Error 1",
+          position: "bottom",
+          visibilityTime: 4000,
+          autoHide: true,
+        });
+      } else {
+        if (!tableExists) {
+          Toast.show({
+            type: "error",
+            text1: "No account found!",
+            position: "bottom",
+            visibilityTime: 4000,
+            autoHide: true,
+          });
+        } else {
+          let emailExists = false;
+          await checkEmailExists(db, username)
+            .then((exists) => {
+              emailExists = exists;
+            })
+            .catch((err) => {
+              console.log(err);
+              emailExists = null;
+            });
+          if (emailExists == true) {
+            let getSalt = "";
+            let getUserId = null;
+            await getSaltAndId(db, username)
+              .then((result) => {
+                if (result !== null) {
+                  getSalt = result.salt;
+                  getUserId = result.userId;
+                }
+              })
+              .catch((err) => {});
+
+            if (getUserId !== null && getSalt !== "") {
+              const hashPassword = hashValue(password, getSalt);
+              let correctCreds = false;
+              await loginUsingCreds(db, username, hashPassword)
+                .then((res) => {
+                  if (res == true) {
+                    correctCreds = true;
+                  }
+                })
+                .catch((err) => {});
+
+              if (correctCreds) {
+                await AsyncStorage.setItem("userId", getUserId.toString());
+                Toast.show({
+                  type: "success",
+                  text1: "Login successful!",
+                  position: "bottom",
+                  visibilityTime: 4000,
+                  autoHide: true,
+                });
+              } else {
+                Toast.show({
+                  type: "error",
+                  text1: "Sign-In Error",
+                  text2: "Invalid Credentials!",
+                  position: "bottom",
+                  visibilityTime: 4000,
+                  autoHide: true,
+                });
+              }
+            } else {
+              Toast.show({
+                type: "error",
+                text1: "Database error 1",
+                position: "bottom",
+                visibilityTime: 4000,
+                autoHide: true,
+              });
+            }
+          } else if (emailExists == false) {
+            Toast.show({
+              type: "error",
+              text1: "Email does not exist!",
+              text2: "Register to use the app!",
+              position: "bottom",
+              visibilityTime: 4000,
+              autoHide: true,
+            });
+          } else {
+            Toast.show({
+              type: "error",
+              text1: "Database Error 2",
+              position: "bottom",
+              visibilityTime: 4000,
+              autoHide: true,
+            });
+          }
+        }
+      }
+    } else {
       Toast.show({
         type: "error",
-        text1: "Sign-In Error",
-        text2: "Invalid Credentials!",
+        text1: "Login Error",
+        text2: "Fill up details!",
         position: "bottom",
         visibilityTime: 4000,
         autoHide: true,
       });
-      // console.log("Login error:", error.message);
     }
   };
+
+  // useEffect(() => {
+  //   try {
+  //     const login = async () => {
+  //       const auth = getAuth(app);
+  //       // const { user } = await signInWithEmailAndPassword(
+  //       //   auth,
+  //       //   "pranavpn7@gmail.com",
+  //       //   "Panda@123"
+  //       // );
+  //       // // User successfully logged in, you can now proceed with further actions
+  //       // // console.log("User logged in:", user);
+  //       // navigation.navigate("Home");
+  //       onAuthStateChanged(auth, (user) => {
+  //         if (user) {
+  //           navigation.navigate("Home");
+  //         }
+  //       });
+  //     };
+
+  //     login();
+  //   } catch (error) {}
+  // }, []);
+
+  // const handleLogin = async () => {
+  //   try {
+  //     const auth = getAuth(app);
+  //     const { user } = await signInWithEmailAndPassword(
+  //       auth,
+  //       username,
+  //       password
+  //     );
+  //     // User successfully logged in, you can now proceed with further actions
+  //     // console.log("User logged in:", user);
+  //     navigation.navigate("Home");
+  //   } catch (error) {
+  //     Toast.show({
+  //       type: "error",
+  //       text1: "Sign-In Error",
+  //       text2: "Invalid Credentials!",
+  //       position: "bottom",
+  //       visibilityTime: 4000,
+  //       autoHide: true,
+  //     });
+  //     // console.log("Login error:", error.message);
+  //   }
+  // };
 
   const styles = StyleSheet.create({
     containerOuter: {

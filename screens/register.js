@@ -1,4 +1,6 @@
 import { useState } from "react";
+import * as SQLite from "expo-sqlite";
+
 import {
   StyleSheet,
   TextInput,
@@ -10,10 +12,19 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import app from "../firebaseConfig";
+import CryptoJS from "crypto-js";
 
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { getFirestore, collection, addDoc } from "firebase/firestore";
 import Toast from "react-native-toast-message";
+import {
+  checkTableExists,
+  createUserDetailsTable,
+  insertIntoUserDetails,
+  deleteAllTables,
+  checkEmailExists,
+} from "../queries";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Register = ({ navigation }) => {
   // console.log(firebase);
@@ -34,68 +45,134 @@ const Register = ({ navigation }) => {
     //to be done later
   };
 
-  const registerNewUser = async (email, password) => {
-    try {
-      if (
-        name !== "" &&
-        email !== "" &&
-        password !== "" &&
-        confirmPassword == password
-      ) {
-        const auth = getAuth(app);
-        const firestore = getFirestore(app);
+  // Generate a random salt value
+  const generateSalt = () => {
+    let createSalt = CryptoJS.SHA256(Math.random().toString()).toString();
+    return createSalt;
+  };
 
-        const userCredential = await createUserWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
-        const user = userCredential.user;
+  const hashValue = (val, salt) => {
+    const hashedValue = CryptoJS.SHA256(val + salt).toString();
+    return hashedValue;
+  };
 
-        const usersCollection = collection(firestore, "users");
-        await addDoc(usersCollection, {
-          name: name,
-          email: user.email,
-          uid: user.uid,
-          transactions: [],
-          cards: [],
-          expenditure: 0,
-          received: 0,
+  const registerNewUser = async () => {
+    const db = SQLite.openDatabase("ExpenseManagement.db");
+    if (
+      name !== "" &&
+      email !== "" &&
+      password !== "" &&
+      confirmPassword == password
+    ) {
+      await deleteAllTables(db);
+
+      let tableExists = false;
+      await checkTableExists(db, "userDetails")
+        .then((exists) => {
+          tableExists = exists;
+        })
+        .catch((err) => {
+          tableExists = null;
         });
 
-        // console.log("User data stored in Firestore.");
-        navigation.navigate("Home");
-      } else {
+      if (tableExists == null) {
         Toast.show({
           type: "error",
-          text1: "Sign-Up Error",
-          text2: "Fill up details first!",
+          text1: "Database Error 1",
           position: "bottom",
           visibilityTime: 4000,
           autoHide: true,
         });
+      } else {
+        let tableCreated = true;
+        if (tableExists == false) {
+          await createUserDetailsTable(db)
+            .then(() => (tableCreated = true))
+            .catch((err) => (tableCreated = false));
+        }
+        if (!tableCreated) {
+          Toast.show({
+            type: "error",
+            text1: "Database Error 2",
+            position: "bottom",
+            visibilityTime: 4000,
+            autoHide: true,
+          });
+        } else {
+          let emailExists = false;
+          await checkEmailExists(db, email)
+            .then((exists) => {
+              emailExists = exists;
+            })
+            .catch((err) => {
+              console.log(err);
+              emailExists = null;
+            });
+          if (emailExists == false) {
+            let dataInserted = null;
+            const getSalt = generateSalt();
+            const hashedPassword = hashValue(password, getSalt);
+            await insertIntoUserDetails(
+              db,
+              name,
+              email,
+              hashedPassword,
+              getSalt
+            )
+              .then((result) => {
+                if (result !== null) {
+                  dataInserted = result.userId;
+                }
+              })
+              .catch((err) => {
+                dataInserted = null;
+              });
+            if (dataInserted == null) {
+              Toast.show({
+                type: "error",
+                text1: "Database Error 3",
+                position: "bottom",
+                visibilityTime: 4000,
+                autoHide: true,
+              });
+            } else {
+              await AsyncStorage.setItem("userId", dataInserted.toString());
+              Toast.show({
+                type: "success",
+                text1: "Registration Successful",
+                position: "bottom",
+                visibilityTime: 4000,
+                autoHide: true,
+              });
+              setTimeout(() => {
+                navigation.navigate("TestDetails");
+              }, 500);
+            }
+          } else if (emailExists == true) {
+            Toast.show({
+              type: "error",
+              text1: "Email Exists",
+              text2: "Account already exists! Try login!",
+              position: "bottom",
+              visibilityTime: 4000,
+              autoHide: true,
+            });
+          } else {
+            Toast.show({
+              type: "error",
+              text1: "Database Error 4",
+              position: "bottom",
+              visibilityTime: 4000,
+              autoHide: true,
+            });
+          }
+        }
       }
-    } catch (error) {
-      let errorMessage = "An error occurred during sign-up";
-
-      switch (error.code) {
-        case "auth/email-already-in-use":
-          errorMessage = "Email address is already registered";
-          break;
-        case "auth/weak-password":
-          errorMessage = "Weak password. Please choose a stronger password";
-          break;
-        // Add more cases for other error codes if needed
-
-        default:
-          break;
-      }
-      ///console.log(errorMessage);
-      // Display toast message
+    } else {
       Toast.show({
         type: "error",
         text1: "Sign-Up Error",
-        text2: errorMessage,
+        text2: "Fill up details first and match both passwords!",
         position: "bottom",
         visibilityTime: 4000,
         autoHide: true,

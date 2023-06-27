@@ -37,7 +37,8 @@
     "react-native-web": "~0.18.11",
     "react-redux": "^8.1.0",
     "redux": "^4.2.1",
-    "rn-tooltip": "^3.0.3"
+    "rn-tooltip": "^3.0.3",
+    "expo-sqlite": "~11.1.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
