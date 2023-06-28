@@ -409,12 +409,13 @@ export const getSaltAndId = (db, email) => {
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
-        "SELECT salt FROM userDetails WHERE email = ?",
+        "SELECT salt,userId FROM userDetails WHERE email = ?",
         [email],
         (_, result) => {
           if (result.rows.length > 0) {
             const salt = result.rows.item(0).salt;
             const userId = result.rows.item(0).userId;
+            console.log(salt, userId);
             resolve({ salt, userId });
           } else {
             resolve(null); // User not found
