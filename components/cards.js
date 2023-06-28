@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Dimensions } from "react-native";
+import * as SQLite from "expo-sqlite";
 
 import {
   Text,
@@ -18,6 +19,15 @@ import { getFirestore, doc, updateDoc } from "firebase/firestore";
 
 import { useSelector, useDispatch } from "react-redux";
 import { setCardProfileModal } from "../store";
+import { useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  checkUniqueIdExists,
+  deleteCard,
+  getCards,
+  insertIntoCardDetails,
+} from "../queries";
+import { useNavigation } from "@react-navigation/native";
 
 const cards = [
   {
@@ -98,7 +108,7 @@ const CardComponent = (props) => {
   };
   return (
     <TouchableOpacity
-      // onPress={() => updateCardProfileModal()}
+      onPress={() => updateCardProfileModal()}
       style={styles.cardContainer}
     >
       {/* image box */}
@@ -139,7 +149,7 @@ const CardComponent = (props) => {
               {cardName[0]}
               {cardName.slice(1).length > 4 ? (
                 <Text style={{ fontSize: 15, textTransform: "lowercase" }}>
-                  {cardName.slice(1, 5)}...
+                  {cardName.slice(1, 3)}..
                 </Text>
               ) : (
                 <Text style={{ fontSize: 15, textTransform: "lowercase" }}>
@@ -182,25 +192,85 @@ const CardComponent = (props) => {
 };
 
 const Cards = (props) => {
+  const navigation = useNavigation();
+  const db = SQLite.openDatabase("ExpenseManagement.db");
   const windowWidth = Dimensions.get("window").width;
 
-  const [cardsData, setCardsData] = useState(props.cards);
+  const [userId, setUserId] = useState("");
+  const [cardsLen, setCardsLen] = useState(0);
+  const [cardsData, setCardsData] = useState([]);
   const [newCard, setNewCard] = useState(false);
   const [selectedTypeofCard, setSelectedTypeofCard] = useState("bank");
   const [cardName, setCardName] = useState("");
   const [balance, setBalance] = useState("");
   const [cardId, setCardId] = useState("");
+  const [cardPaginationNumber, setCardPaginationNumber] = useState(1);
 
   const firestore = getFirestore(app);
 
-  const checkRepeatCard = (name, id, cardType) => {
-    return (
-      cardsData.filter((obj) => {
-        return (
-          obj.cardName == name && obj.uniqueId == id && obj.type == cardType
-        );
-      }).length == 0
-    );
+  useEffect(() => {
+    const setData = async () => {
+      let storedId = await AsyncStorage.getItem("userId");
+      if (storedId !== null) {
+        storedId = parseInt(storedId);
+        setUserId(storedId);
+
+        // now set cards;
+        await getCards(db, storedId, cardPaginationNumber)
+          .then((result) => {
+            setCardsData(result.cards);
+            setCardsLen(result.count);
+          })
+          .catch((err) => {
+            Toast.show({
+              type: "error",
+              text1: "Database Error 0",
+              position: "bottom",
+              visibilityTime: 4000,
+              autoHide: true,
+            });
+          });
+      }
+    };
+    setData();
+  }, []);
+
+  const paginate = async (num) => {
+    let newNum = cardPaginationNumber;
+    if (num == 1) {
+      if (
+        cardsLen % 5 == 0 &&
+        cardPaginationNumber < Math.floor(cardsLen / 5)
+      ) {
+        setCardPaginationNumber(cardPaginationNumber + 1);
+        newNum = newNum + 1;
+      } else if (
+        cardsLen % 5 !== 0 &&
+        cardPaginationNumber < Math.ceil(cardsLen / 5)
+      ) {
+        setCardPaginationNumber(cardPaginationNumber + 1);
+        newNum = newNum + 1;
+      }
+    } else if (num == -1 && cardPaginationNumber > 1) {
+      setCardPaginationNumber(cardPaginationNumber - 1);
+      newNum = newNum - 1;
+    }
+
+    if (newNum !== cardPaginationNumber) {
+      await getCards(db, userId, newNum)
+        .then((result) => {
+          setCardsData(result.cards);
+        })
+        .catch((err) => {
+          Toast.show({
+            type: "error",
+            text1: "Database Error1",
+            position: "bottom",
+            visibilityTime: 4000,
+            autoHide: true,
+          });
+        });
+    }
   };
 
   const handleNewCard = async () => {
@@ -211,41 +281,97 @@ const Cards = (props) => {
       balance !== "" &&
       cardId !== ""
     ) {
-      if (checkRepeatCard(cardName, cardId, selectedTypeofCard)) {
-        const newCardData = {
-          type: selectedTypeofCard,
-          cardName: cardName,
-          uniqueId: cardId,
-          balance: parseFloat(balance),
-        };
-        let arr = cardsData;
-        arr.push(newCardData);
-        // setSelectedTypeofCard("");
-        setCardId("");
-        setCardName("");
-        setBalance("");
-        setNewCard(false);
+      let repeatedCard = false;
+      // await deleteCard(db, userId, 0);
+      await checkUniqueIdExists(db, userId, cardId)
+        .then((res) => {
+          repeatedCard = res;
+        })
+        .catch((err) => {});
+      if (repeatedCard == false) {
+        // add card
+        // set pagination 1
+        let cardAdded = false;
+        await insertIntoCardDetails(
+          db,
+          userId,
+          cardsLen + 1,
+          cardName,
+          parseFloat(balance),
+          cardId,
+          selectedTypeofCard
+        )
+          .then((result) => {
+            cardAdded = result;
+          })
+          .catch((err) => {
+            cardAdded = null;
+          });
 
-        try {
-          const documentRef = doc(firestore, "users", props.docId);
-          await updateDoc(documentRef, { cards: arr });
-          setCardsData(arr);
-        } catch (error) {
-          console.log(error);
+        if (cardAdded !== null) {
+          if (cardAdded == true) {
+            let get = null;
+            await getCards(db, userId, 1)
+              .then((result) => {
+                get = result;
+              })
+              .catch((err) => {});
+            if (get !== null) {
+              setCardsData(get.cards);
+              setCardPaginationNumber(1);
+              setNewCard(false);
+              setCardsLen(get.count);
+              setCardId("");
+              setCardName("");
+              setBalance("");
+              setSelectedTypeofCard("bank");
+              Toast.show({
+                type: "success",
+                text1: "Card Added",
+                position: "bottom",
+                visibilityTime: 4000,
+                autoHide: true,
+              });
+            } else {
+              Toast.show({
+                type: "error",
+                text1: "Database Error2",
+                position: "bottom",
+                visibilityTime: 4000,
+                autoHide: true,
+              });
+            }
+          } else {
+            Toast.show({
+              type: "error",
+              text1: "Database Error3",
+              position: "bottom",
+              visibilityTime: 4000,
+              autoHide: true,
+            });
+          }
+        } else {
           Toast.show({
             type: "error",
-            text1: "Database issue!",
-            text2: "Try again later!",
+            text1: "Database Error4",
             position: "bottom",
             visibilityTime: 4000,
             autoHide: true,
           });
         }
-      } else {
+      } else if (repeatedCard == true) {
         Toast.show({
           type: "error",
           text1: "Duplicate Details",
           text2: "Card already present!",
+          position: "bottom",
+          visibilityTime: 4000,
+          autoHide: true,
+        });
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Database Error5",
           position: "bottom",
           visibilityTime: 4000,
           autoHide: true,
@@ -269,20 +395,40 @@ const Cards = (props) => {
     setBalance(numericValue);
   };
 
-  const handleCardRemoval = async (id) => {
-    let newCardData = cardsData.filter((obj, idx) => {
-      return idx !== id;
-    });
-    try {
-      const documentRef = doc(firestore, "users", props.docId);
-      await updateDoc(documentRef, { cards: newCardData });
-      setCardsData(newCardData);
-    } catch (error) {
-      console.log(error);
+  const handleCardRemoval = async (obj) => {
+    let deletedCard = null;
+    await deleteCard(db, userId, obj.cardNum)
+      .then((result) => {
+        deletedCard = result;
+      })
+      .catch((err) => {});
+    if (deletedCard == true) {
+      await getCards(db, userId, 1)
+        .then((result) => {
+          setCardsData(result.cards);
+          setCardsLen(result.count);
+          setCardPaginationNumber(1);
+          Toast.show({
+            type: "success",
+            text1: "Card Deleted",
+            position: "bottom",
+            visibilityTime: 4000,
+            autoHide: true,
+          });
+        })
+        .catch((err) => {
+          Toast.show({
+            type: "error",
+            text1: "Database Error6",
+            position: "bottom",
+            visibilityTime: 4000,
+            autoHide: true,
+          });
+        });
+    } else {
       Toast.show({
         type: "error",
-        text1: "Database issue!",
-        text2: "Try again later!",
+        text1: "Database Error7",
         position: "bottom",
         visibilityTime: 4000,
         autoHide: true,
@@ -567,7 +713,7 @@ const Cards = (props) => {
             </TouchableOpacity>
           </View>
         </View>
-      ) : cardsData.length == 0 ? (
+      ) : cardsLen == 0 ? (
         <View
           style={{
             alignItems: "center",
@@ -592,7 +738,7 @@ const Cards = (props) => {
                   <TouchableOpacity
                     style={{ marginTop: 20, marginRight: 35 }}
                     onPress={() => {
-                      handleCardRemoval(id);
+                      handleCardRemoval(obj);
                     }}
                   >
                     <Ionicons
@@ -605,7 +751,7 @@ const Cards = (props) => {
                   <TouchableOpacity
                     style={{ marginTop: 20, marginRight: 35 }}
                     onPress={() => {
-                      handleCardRemoval(id);
+                      handleCardRemoval(obj);
                     }}
                   >
                     <Ionicons

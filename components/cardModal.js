@@ -100,7 +100,7 @@ const CardModal = () => {
               <Text
                 style={{
                   color: "#393e46",
-                  width: "50%",
+                  width: "40%",
                   fontWeight: "bold",
                   fontSize: 15,
                 }}
@@ -121,7 +121,7 @@ const CardModal = () => {
               <Text
                 style={{
                   color: "#393e46",
-                  width: "50%",
+                  width: "40%",
                   fontWeight: "bold",
                   fontSize: 15,
                 }}

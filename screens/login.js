@@ -53,7 +53,10 @@ const Login = ({ navigation }) => {
   useEffect(() => {
     const checkLoggedIn = async () => {
       const getUserId = await AsyncStorage.getItem("userId");
-      if (getUserId !== null || getUserId !== "") navigation.navigate("Home");
+      if (getUserId !== null && getUserId !== "") {
+        console.log(getUserId);
+        navigation.navigate("Profile");
+      }
     };
 
     checkLoggedIn();
@@ -95,7 +98,6 @@ const Login = ({ navigation }) => {
               emailExists = exists;
             })
             .catch((err) => {
-              console.log(err);
               emailExists = null;
             });
           if (emailExists == true) {
@@ -130,6 +132,7 @@ const Login = ({ navigation }) => {
                   visibilityTime: 4000,
                   autoHide: true,
                 });
+                navigation.navigate("Profile");
               } else {
                 Toast.show({
                   type: "error",

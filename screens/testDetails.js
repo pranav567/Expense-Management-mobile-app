@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import { getUserDetailsById } from "../queries";
+import { getCards, getUserDetailsById } from "../queries";
 import { useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -21,16 +21,24 @@ const TestDetails = ({ navigation }) => {
   useEffect(() => {
     const settingDetails = async () => {
       const getUserId = await AsyncStorage.getItem("userId");
-      await getUserDetailsById(db, getUserId)
+      await getCards(db, getUserId, 1)
         .then((result) => {
-          if (result !== null) {
-            setName(result.name);
-            setEmail(result.email);
-          }
+          setName(JSON.stringify(result.cards));
+          setEmail(result.count);
         })
         .catch((err) => {
           console.log(err);
         });
+      // await getUserDetailsById(db, getUserId)
+      //   .then((result) => {
+      //     if (result !== null) {
+      //       setName(result.name);
+      //       setEmail(result.email);
+      //     }
+      //   })
+      //   .catch((err) => {
+      //     console.log(err);
+      //   });
     };
 
     settingDetails();

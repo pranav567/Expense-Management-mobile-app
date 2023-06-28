@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Text, View, StyleSheet } from "react-native";
 import app from "../firebaseConfig";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import * as SQLite from "expo-sqlite";
 import {
   getFirestore,
   doc,
@@ -13,14 +14,31 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { useEffect } from "react";
+import { getUserDetailsById } from "../queries";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const PersonalData = (props) => {
-  const [name, setName] = useState(props.name);
-  const [email, setEmail] = useState(props.email);
+const PersonalData = () => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
 
-  // useEffect(()=>{
-
-  // },[])
+  useEffect(() => {
+    const setData = async () => {
+      const db = SQLite.openDatabase("ExpenseManagement.db");
+      const storedId = await AsyncStorage.getItem("userId");
+      if (storedId !== null) {
+        let id = parseInt(storedId);
+        await getUserDetailsById(db, id)
+          .then((res) => {
+            if (res !== null) {
+              setName(res.name);
+              setEmail(res.email);
+            }
+          })
+          .catch((err) => {});
+      }
+    };
+    setData();
+  }, []);
 
   const auth = getAuth(app);
   const firestore = getFirestore(app);

@@ -35,54 +35,54 @@ const Profile = ({ navigation }) => {
   const [userData, setUserData] = useState(null);
   const [docid, setDocid] = useState("");
 
-  useEffect(() => {
-    async function storeData() {
-      let uid = "";
-      try {
-        await new Promise((resolve, reject) => {
-          onAuthStateChanged(auth, (user) => {
-            if (user) {
-              // User is logged in, get user data
-              uid = user.uid;
-              resolve();
-            } else {
-              // User is not logged in
-              navigation.navigate("Login");
-              reject();
-            }
-          });
-        });
+  // useEffect(() => {
+  //   async function storeData() {
+  //     let uid = "";
+  //     try {
+  //       await new Promise((resolve, reject) => {
+  //         onAuthStateChanged(auth, (user) => {
+  //           if (user) {
+  //             // User is logged in, get user data
+  //             uid = user.uid;
+  //             resolve();
+  //           } else {
+  //             // User is not logged in
+  //             navigation.navigate("Login");
+  //             reject();
+  //           }
+  //         });
+  //       });
 
-        const usersCollectionRef = collection(firestore, "users");
-        const queryDoc = query(
-          usersCollectionRef,
-          where("uid", "==", uid),
-          limit(1)
-        );
+  //       const usersCollectionRef = collection(firestore, "users");
+  //       const queryDoc = query(
+  //         usersCollectionRef,
+  //         where("uid", "==", uid),
+  //         limit(1)
+  //       );
 
-        const querySnapshot = await getDocs(queryDoc);
+  //       const querySnapshot = await getDocs(queryDoc);
 
-        if (!querySnapshot.empty) {
-          const doc = querySnapshot.docs[0];
-          // Handle the matching document
-          const dataUser = doc.data();
-          setUserData(dataUser);
-          setDocid(doc.id);
-          // console.log(userData);
-        } else {
-          // No matching document found
-          navigation.navigate("Login");
-          // console.log("User document does not exist");
-        }
-      } catch (error) {
-        // Handle error
-        // console.log(error);
-        navigation.navigate("Login");
-      }
-    }
+  //       if (!querySnapshot.empty) {
+  //         const doc = querySnapshot.docs[0];
+  //         // Handle the matching document
+  //         const dataUser = doc.data();
+  //         setUserData(dataUser);
+  //         setDocid(doc.id);
+  //         // console.log(userData);
+  //       } else {
+  //         // No matching document found
+  //         navigation.navigate("Login");
+  //         // console.log("User document does not exist");
+  //       }
+  //     } catch (error) {
+  //       // Handle error
+  //       // console.log(error);
+  //       navigation.navigate("Login");
+  //     }
+  //   }
 
-    storeData();
-  }, []);
+  //   storeData();
+  // }, []);
 
   const cardProfileModal = useSelector(
     (state) => state.cardProfileModal.cardProfileModal
@@ -125,41 +125,33 @@ const Profile = ({ navigation }) => {
             width: "100%",
           }}
         >
-          {userData !== null && docid !== "" ? (
-            <>
-              <PersonalData name={userData.name} email={userData.email} />
-
-              <View
-                style={{
-                  borderTopWidth: 1,
-                  margin: 20,
-                  borderTopColor: "#d4d4d6",
-                  // width: "60%",
-                }}
-              ></View>
-              <Cards cards={userData.cards} docId={docid} />
-              <View
-                style={{
-                  borderTopWidth: 1,
-                  margin: 20,
-                  borderTopColor: "#d4d4d6",
-                  // width: "60%",
-                }}
-              ></View>
-              <Security />
-              <View
-                style={{
-                  borderTopWidth: 1,
-                  margin: 20,
-                  borderTopColor: "#d4d4d6",
-                  // width: "60%",
-                }}
-              ></View>
-            </>
-          ) : (
-            <></>
-          )}
-          {/* personal info */}
+          <PersonalData />
+          <View
+            style={{
+              borderTopWidth: 1,
+              margin: 20,
+              borderTopColor: "#d4d4d6",
+              // width: "60%",
+            }}
+          ></View>
+          <Cards />
+          <View
+            style={{
+              borderTopWidth: 1,
+              margin: 20,
+              borderTopColor: "#d4d4d6",
+              // width: "60%",
+            }}
+          ></View>
+          <Security />
+          <View
+            style={{
+              borderTopWidth: 1,
+              margin: 20,
+              borderTopColor: "#d4d4d6",
+              // width: "60%",
+            }}
+          ></View>
         </ScrollView>
       </View>
       <BottomNavigator buttonActive="profile" />

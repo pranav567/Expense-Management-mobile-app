@@ -23,6 +23,8 @@ import {
   insertIntoUserDetails,
   deleteAllTables,
   checkEmailExists,
+  createCardsDetailsTable,
+  createTransactionDetailsTable,
 } from "../queries";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -64,7 +66,7 @@ const Register = ({ navigation }) => {
       password !== "" &&
       confirmPassword == password
     ) {
-      await deleteAllTables(db);
+      // await deleteAllTables(db);
 
       let tableExists = false;
       await checkTableExists(db, "userDetails")
@@ -137,6 +139,8 @@ const Register = ({ navigation }) => {
               });
             } else {
               await AsyncStorage.setItem("userId", dataInserted.toString());
+              await createCardsDetailsTable(db);
+              // await createTransactionDetailsTable(db);
               Toast.show({
                 type: "success",
                 text1: "Registration Successful",
@@ -145,7 +149,7 @@ const Register = ({ navigation }) => {
                 autoHide: true,
               });
               setTimeout(() => {
-                navigation.navigate("TestDetails");
+                navigation.navigate("Profile");
               }, 500);
             }
           } else if (emailExists == true) {

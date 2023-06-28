@@ -33,14 +33,14 @@ export const createUserDetailsTable = (db) => {
     db.transaction((tx) => {
       tx.executeSql(
         `CREATE TABLE IF NOT EXISTS "userDetails" (
-                  userId INTEGER PRIMARY KEY AUTOINCREMENT,
-                  name TEXT NOT NULL,
-                  email TEXT NOT NULL UNIQUE,
-                  password TEXT NOT NULL,
-                  salt TEXT NOT NULL,
-                  expenditure INTEGER NOT NULL DEFAULT 0,
-                  received INTEGER NOT NULL DEFAULT 0
-                )`,
+          userId INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          email TEXT NOT NULL UNIQUE,
+          password TEXT NOT NULL,
+          salt TEXT NOT NULL,
+          expenditure INTEGER NOT NULL DEFAULT 0,
+          received INTEGER NOT NULL DEFAULT 0
+        )`,
         [],
         () => {
           resolve(true);
@@ -63,15 +63,15 @@ export const createCardsDetailsTable = (db) => {
     db.transaction((tx) => {
       tx.executeSql(
         `CREATE TABLE IF NOT EXISTS cardDetails (
-      userId INTEGER NOT NULL,
-      cardNum INTEGER NOT NULL,
-      cardName TEXT NOT NULL,
-      balance INTEGER NOT NULL,
-      uniqueId TEXT NOT NULL,
-      type TEXT NOT NULL,
-      PRIMARY KEY (uniqueId,userId),
-      FOREIGN KEY (userId) REFERENCES "userDetails" (userId) ON DELETE CASCADE
-    )`,
+          userId INTEGER NOT NULL,
+          cardNum INTEGER NOT NULL,
+          cardName TEXT NOT NULL,
+          balance INTEGER NOT NULL,
+          uniqueId TEXT NOT NULL,
+          type TEXT NOT NULL,
+          PRIMARY KEY (uniqueId),
+          FOREIGN KEY (userId) REFERENCES "userDetails" (userId) ON DELETE CASCADE
+        )`,
         [],
         () => {
           resolve(true);
@@ -92,19 +92,19 @@ export const createTransactionDetailsTable = (db) => {
     db.transaction((tx) => {
       tx.executeSql(
         `CREATE TABLE IF NOT EXISTS transactionDetails (
-        userId INTEGER NOT NULL,
-        transactionId INTEGER NOT NULL,
-        amount REAL NOT NULL,
-        date TEXT NOT NULL,
-        description TEXT NOT NULL,
-        from TEXT,
-        to TEXT,
-        unnecessary INTEGER,
-        recurring INTEGER,
-        transactionType TEXT NOT NULL,
-        PRIMARY KEY (transactionId, userId),
-        FOREIGN KEY (userId) REFERENCES userDetails(userId) ON DELETE CASCADE
-      )`,
+          userId INTEGER NOT NULL,
+          transactionId INTEGER NOT NULL,
+          amount REAL NOT NULL,
+          date TEXT NOT NULL,
+          description TEXT NOT NULL,
+          from TEXT,
+          to TEXT,
+          unnecessary INTEGER,
+          recurring INTEGER,
+          transactionType TEXT NOT NULL,
+          PRIMARY KEY (transactionId, userId),
+          FOREIGN KEY (userId) REFERENCES userDetails(userId) ON DELETE CASCADE
+        )`,
         [],
         () => {
           // Table created successfully or already exists
@@ -169,7 +169,7 @@ export const insertIntoTransactionDetails = (
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
-        'INSERT INTO transactionDetails (userId, transactionId, amount, date, description, "from", "to","unnecessary","recurring", transactionType) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO transactionDetails (userId, transactionId, amount, date, description, "from", "to","unnecessary","recurring", transactionType) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?,?)',
         [
           userId,
           transactionId,
@@ -194,43 +194,6 @@ export const insertIntoTransactionDetails = (
         (_, error) => {
           // Error occurred while executing the SQL query
           //consoleerror("Error inserting transaction:", error);
-          reject(error);
-        }
-      );
-    });
-  });
-};
-
-// insert cardDetails
-
-export const insertIntoCardDetails = (
-  db,
-  userId,
-  cardNum,
-  cardName,
-  balance,
-  uniqueId,
-  type
-) => {
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        "INSERT INTO cardDetails (userId,cardNum, cardName, balance, uniqueId, type) VALUES (?, ?, ?, ?, ?)",
-        [userId, cardNum, cardName, balance, uniqueId, type],
-        (_, result) => {
-          if (result.rowsAffected > 0) {
-            // Insertion successful
-            // //consolelog("Card inserted successfully");
-            resolve(true);
-          } else {
-            // Insertion failed
-            //consolelog("Failed to insert card");
-            resolve(false);
-          }
-        },
-        (_, error) => {
-          // Error occurred while executing the SQL query
-          //consoleerror("Error inserting card:", error);
           reject(error);
         }
       );
@@ -320,7 +283,7 @@ export const deleteCard = (db, userId, cardNum) => {
     db.transaction((tx) => {
       tx.executeSql(
         `DELETE FROM cardDetails WHERE userId = ? AND cardNum = ?`,
-        [newBalance, userId, cardNum],
+        [userId, cardNum],
         (_, result) => {
           if (result.rowsAffected > 0) {
             resolve(true);
@@ -403,7 +366,7 @@ export const loginUsingCreds = (db, email, password) => {
   });
 };
 
-// get salt from userDetails
+// get salt,id from userDetails
 
 export const getSaltAndId = (db, email) => {
   return new Promise((resolve, reject) => {
@@ -415,7 +378,6 @@ export const getSaltAndId = (db, email) => {
           if (result.rows.length > 0) {
             const salt = result.rows.item(0).salt;
             const userId = result.rows.item(0).userId;
-            console.log(salt, userId);
             resolve({ salt, userId });
           } else {
             resolve(null); // User not found
@@ -487,6 +449,78 @@ export const updateTransactionUserDetails = async (
         },
         (_, error) => {
           //consoleerror("Error updating user:", error);
+          reject(error);
+        }
+      );
+    });
+  });
+};
+
+// get cards
+
+export const getCards = async (db, userId, cardPage) => {
+  return new Promise((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        "SELECT COUNT(*) FROM cardDetails WHERE userId =?",
+        [userId],
+        (_, result) => {
+          const count = result.rows.item(0)["COUNT(*)"];
+
+          tx.executeSql(
+            "SELECT * FROM cardDetails WHERE userId = ? ORDER BY cardNum DESC LIMIT ? OFFSET ?",
+            [userId, 5, (cardPage - 1) * 5],
+            (_, result) => {
+              const cards = [];
+              for (let i = 0; i < result.rows.length; i++) {
+                const row = result.rows.item(i);
+                cards.push(row);
+              }
+              resolve({ cards, count });
+            },
+            (_, error) => {
+              reject(error);
+            }
+          );
+        },
+        (_, error) => {
+          reject(error);
+        }
+      );
+    });
+  });
+};
+
+// insert cardDetails
+
+export const insertIntoCardDetails = (
+  db,
+  userId,
+  cardNum,
+  cardName,
+  balance,
+  uniqueId,
+  type
+) => {
+  return new Promise((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        "INSERT INTO cardDetails (userId,cardNum, cardName, balance, uniqueId, type) VALUES (?, ?,?, ?, ?, ?)",
+        [userId, cardNum, cardName, balance, uniqueId, type],
+        (_, result) => {
+          if (result.rowsAffected > 0) {
+            // Insertion successful
+            // //consolelog("Card inserted successfully");
+            resolve(true);
+          } else {
+            // Insertion failed
+            //consolelog("Failed to insert card");
+            resolve(false);
+          }
+        },
+        (_, error) => {
+          // Error occurred while executing the SQL query
+          //consoleerror("Error inserting card:", error);
           reject(error);
         }
       );

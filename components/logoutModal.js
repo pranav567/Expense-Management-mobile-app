@@ -77,7 +77,9 @@ const LogoutModal = () => {
     try {
       await AsyncStorage.setItem("userId", "");
       navigation.navigate("Login");
+      dispatch(setLogoutModal(false));
     } catch (error) {
+      dispatch(setLogoutModal(false));
       Toast.show({
         type: "error",
         text1: "Something went wrong!",

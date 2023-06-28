@@ -30,8 +30,6 @@ const securityQuestions = [
 ];
 
 const Security = () => {
-  const [name, setName] = useState("Pranav Nair");
-  const [email, setEmail] = useState("pranavpn7@gmail.com");
   const [checkPin, setCheckPin] = useState(-1);
   const [enterOldPin, setEnterOldPin] = useState("");
   const [pinOldLength, setPinOldLength] = useState("");
