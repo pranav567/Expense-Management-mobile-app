@@ -6,6 +6,7 @@ import {
   Text,
   Image,
 } from "react-native";
+import * as SQLite from "expo-sqlite";
 import Toast from "react-native-toast-message";
 import { useNavigation } from "@react-navigation/native";
 import { getAuth } from "firebase/auth";
@@ -16,6 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 import { useSelector, useDispatch } from "react-redux";
 import { setLogoutModal } from "../store";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const styles = StyleSheet.create({
   container: {
@@ -56,15 +58,26 @@ const LogoutModal = () => {
     dispatch(setLogoutModal(false));
   };
 
+  // const handleLogout = async () => {
+  //   try {
+  //     await auth.signOut();
+  //     dispatch(setLogoutModal(false));
+  //     navigation.replace("Login");
+  //     // User has been logged out successfully
+  //     // You can perform any necessary actions here
+  //   } catch (error) {
+  //     dispatch(setLogoutModal(false));
+
+  //     // An error occurred while logging out
+  //     // console.log(error);
+  //   }
+  // };
+
   const handleLogout = async () => {
     try {
-      await auth.signOut();
-      dispatch(setLogoutModal(false));
-      navigation.replace("Login");
-      // User has been logged out successfully
-      // You can perform any necessary actions here
+      await AsyncStorage.setItem("userId", "");
+      navigation.navigate("Login");
     } catch (error) {
-      dispatch(setLogoutModal(false));
       Toast.show({
         type: "error",
         text1: "Something went wrong!",
@@ -73,8 +86,6 @@ const LogoutModal = () => {
         visibilityTime: 4000,
         autoHide: true,
       });
-      // An error occurred while logging out
-      // console.log(error);
     }
   };
 

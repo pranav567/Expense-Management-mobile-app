@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Platform,
 } from "react-native";
+import * as SQLite from "expo-sqlite";
 import { Ionicons } from "@expo/vector-icons";
 import app from "../firebaseConfig";
 import Toast from "react-native-toast-message";
@@ -52,7 +53,7 @@ const Login = ({ navigation }) => {
   useEffect(() => {
     const checkLoggedIn = async () => {
       const getUserId = await AsyncStorage.getItem("userId");
-      if (getUserId !== null) navigation.navigate("Home");
+      if (getUserId !== null || getUserId !== "") navigation.navigate("Home");
     };
 
     checkLoggedIn();

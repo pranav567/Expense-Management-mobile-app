@@ -4,6 +4,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import * as SQLite from "expo-sqlite";
 import { useSelector, useDispatch } from "react-redux";
 import SecurityPin from "../components/securityPin";
 import { setSecurityCode } from "../store";
