@@ -38,8 +38,8 @@ export const createUserDetailsTable = (db) => {
           email TEXT NOT NULL UNIQUE,
           password TEXT NOT NULL,
           salt TEXT NOT NULL,
-          expenditure INTEGER NOT NULL DEFAULT 0,
-          received INTEGER NOT NULL DEFAULT 0
+          expenditure REAL NOT NULL DEFAULT 0,
+          received REAL NOT NULL DEFAULT 0
         )`,
         [],
         () => {
@@ -91,19 +91,19 @@ export const createTransactionDetailsTable = (db) => {
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
-        `CREATE TABLE IF NOT EXISTS transactionDetails (
+        `CREATE TABLE IF NOT EXISTS "transactionDetails" (
           userId INTEGER NOT NULL,
           transactionId INTEGER NOT NULL,
           amount REAL NOT NULL,
           date TEXT NOT NULL,
           description TEXT NOT NULL,
-          from TEXT,
-          to TEXT,
-          unnecessary INTEGER,
-          recurring INTEGER,
+          "from" TEXT,
+          "to" TEXT,
+          unnecessary BOOLEAN,
+          recurring BOOLEAN,
           transactionType TEXT NOT NULL,
           PRIMARY KEY (transactionId, userId),
-          FOREIGN KEY (userId) REFERENCES userDetails(userId) ON DELETE CASCADE
+          FOREIGN KEY (userId) REFERENCES "userDetails" (userId) ON DELETE CASCADE
         )`,
         [],
         () => {
@@ -144,56 +144,6 @@ export const insertIntoUserDetails = (db, name, email, password, salt) => {
         (_, error) => {
           //consoleerror("Error inserting user:", error);
           // Handle the error case
-          reject(error);
-        }
-      );
-    });
-  });
-};
-
-// insert transactionDetails
-
-export const insertIntoTransactionDetails = (
-  db,
-  userId,
-  transactionId,
-  amount,
-  date,
-  description,
-  from,
-  to,
-  unnecessary,
-  recurring,
-  transactionType
-) => {
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'INSERT INTO transactionDetails (userId, transactionId, amount, date, description, "from", "to","unnecessary","recurring", transactionType) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?,?)',
-        [
-          userId,
-          transactionId,
-          amount,
-          date,
-          description,
-          from,
-          to,
-          unnecessary,
-          recurring,
-          transactionType,
-        ],
-        (_, result) => {
-          if (result.rowsAffected > 0) {
-            // Insertion successful
-            resolve(true);
-          } else {
-            // Insertion failed
-            resolve(false);
-          }
-        },
-        (_, error) => {
-          // Error occurred while executing the SQL query
-          //consoleerror("Error inserting transaction:", error);
           reject(error);
         }
       );
@@ -391,6 +341,31 @@ export const getSaltAndId = (db, email) => {
   });
 };
 
+// get expenditure, received from userDetails
+
+export const getSpendingDetails = (db, userId) => {
+  return new Promise((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        "SELECT expenditure,received FROM userDetails WHERE userId = ?",
+        [userId],
+        (_, result) => {
+          if (result.rows.length > 0) {
+            const expenditure = result.rows.item(0).expenditure;
+            const received = result.rows.item(0).received;
+            resolve({ expenditure, received });
+          } else {
+            resolve(null); // User not found
+          }
+        },
+        (_, error) => {
+          reject(error);
+        }
+      );
+    });
+  });
+};
+
 // check unique id before adding cardDetails
 
 export const checkUniqueIdExists = (db, userId, uniqueId) => {
@@ -435,15 +410,15 @@ export const deleteUser = (db, userId) => {
 
 export const updateTransactionUserDetails = async (
   db,
-  amountAdd,
-  amountRemove,
+  amount1,
+  amount2,
   userId
 ) => {
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
         'UPDATE "userDetails" SET expenditure = ?, received = ? WHERE userId = ?',
-        [amountAdd, amountRemove, userId],
+        [amount1, amount2, userId],
         (_, result) => {
           resolve(result.rowsAffected > 0);
         },
@@ -458,30 +433,19 @@ export const updateTransactionUserDetails = async (
 
 // get cards
 
-export const getCards = async (db, userId, cardPage) => {
+export const getCards = async (db, userId) => {
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
-        "SELECT COUNT(*) FROM cardDetails WHERE userId =?",
+        "SELECT * FROM cardDetails WHERE userId =?",
         [userId],
         (_, result) => {
-          const count = result.rows.item(0)["COUNT(*)"];
-
-          tx.executeSql(
-            "SELECT * FROM cardDetails WHERE userId = ? ORDER BY cardNum DESC LIMIT ? OFFSET ?",
-            [userId, 5, (cardPage - 1) * 5],
-            (_, result) => {
-              const cards = [];
-              for (let i = 0; i < result.rows.length; i++) {
-                const row = result.rows.item(i);
-                cards.push(row);
-              }
-              resolve({ cards, count });
-            },
-            (_, error) => {
-              reject(error);
-            }
-          );
+          const cards = [];
+          for (let i = 0; i < result.rows.length; i++) {
+            const row = result.rows.item(i);
+            cards.push(row);
+          }
+          resolve({ cards });
         },
         (_, error) => {
           reject(error);
@@ -521,6 +485,139 @@ export const insertIntoCardDetails = (
         (_, error) => {
           // Error occurred while executing the SQL query
           //consoleerror("Error inserting card:", error);
+          reject(error);
+        }
+      );
+    });
+  });
+};
+
+// get Transactions
+
+export const getTransactions = async (db, userId, transactionPage) => {
+  return new Promise((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        "SELECT COUNT(*) FROM transactionDetails WHERE userId =?",
+        [userId],
+        (_, result) => {
+          const count = result.rows.item(0)["COUNT(*)"];
+
+          tx.executeSql(
+            "SELECT * FROM transactionDetails WHERE userId = ? ORDER BY transactionId DESC LIMIT ? OFFSET ?",
+            [userId, 5, (transactionPage - 1) * 5],
+            (_, result) => {
+              const transactions = [];
+              for (let i = 0; i < result.rows.length; i++) {
+                const row = result.rows.item(i);
+                transactions.push(row);
+              }
+              resolve({ transactions, count });
+            },
+            (_, error) => {
+              reject(error);
+            }
+          );
+        },
+        (_, error) => {
+          reject(error);
+        }
+      );
+    });
+  });
+};
+
+// insert transactionDetails
+
+export const insertIntoTransactionDetails = (
+  db,
+  userId,
+  transactionId,
+  amount,
+  date,
+  description,
+  from,
+  to,
+  unnecessary,
+  recurring,
+  transactionType
+) => {
+  return new Promise((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        'INSERT INTO transactionDetails (userId, transactionId, amount, date, description, "from", "to","unnecessary","recurring", transactionType) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?,?)',
+        [
+          userId,
+          transactionId,
+          amount,
+          date,
+          description,
+          from,
+          to,
+          unnecessary,
+          recurring,
+          transactionType,
+        ],
+        (_, result) => {
+          if (result.rowsAffected > 0) {
+            // Insertion successful
+            resolve(true);
+          } else {
+            // Insertion failed
+            resolve(false);
+          }
+        },
+        (_, error) => {
+          // Error occurred while executing the SQL query
+          //consoleerror("Error inserting transaction:", error);
+          reject(error);
+        }
+      );
+    });
+  });
+};
+
+// get transaction length
+
+export const transactionLength = async (db, userId) => {
+  return new Promise((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        "SELECT COUNT(*) FROM transactionDetails WHERE userId =?",
+        [userId],
+        (_, result) => {
+          const count = result.rows.item(0)["COUNT(*)"];
+          resolve(count);
+        },
+        (_, error) => {
+          reject(error);
+        }
+      );
+    });
+  });
+};
+
+// get transactions for month of ...
+
+export const getMonthlyTransactions = async (db, userId, month, year) => {
+  return new Promise((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        `SELECT * FROM transactionDetails WHERE userId=? AND strftime('%m', date) = ? AND strftime('%Y', date) = ?`,
+        [userId, month, year],
+        (_, result) => {
+          let spent = 0.0;
+          let income = 0.0;
+          for (let i = 0; i < result.rows.length; i++) {
+            if (result.rows[i].transactionType == "Spent") {
+              spent += result.rows.item(i).amount;
+            } else if (result.rows[i].transactionType == "Received") {
+              income += result.rows.item(i).amount;
+            }
+          }
+          resolve({ spent, income });
+        },
+        (_, error) => {
           reject(error);
         }
       );

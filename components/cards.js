@@ -204,7 +204,6 @@ const Cards = (props) => {
   const [cardName, setCardName] = useState("");
   const [balance, setBalance] = useState("");
   const [cardId, setCardId] = useState("");
-  const [cardPaginationNumber, setCardPaginationNumber] = useState(1);
 
   const firestore = getFirestore(app);
 
@@ -216,10 +215,9 @@ const Cards = (props) => {
         setUserId(storedId);
 
         // now set cards;
-        await getCards(db, storedId, cardPaginationNumber)
+        await getCards(db, storedId)
           .then((result) => {
             setCardsData(result.cards);
-            setCardsLen(result.count);
           })
           .catch((err) => {
             Toast.show({
@@ -235,43 +233,43 @@ const Cards = (props) => {
     setData();
   }, []);
 
-  const paginate = async (num) => {
-    let newNum = cardPaginationNumber;
-    if (num == 1) {
-      if (
-        cardsLen % 5 == 0 &&
-        cardPaginationNumber < Math.floor(cardsLen / 5)
-      ) {
-        setCardPaginationNumber(cardPaginationNumber + 1);
-        newNum = newNum + 1;
-      } else if (
-        cardsLen % 5 !== 0 &&
-        cardPaginationNumber < Math.ceil(cardsLen / 5)
-      ) {
-        setCardPaginationNumber(cardPaginationNumber + 1);
-        newNum = newNum + 1;
-      }
-    } else if (num == -1 && cardPaginationNumber > 1) {
-      setCardPaginationNumber(cardPaginationNumber - 1);
-      newNum = newNum - 1;
-    }
+  // const paginate = async (num) => {
+  //   let newNum = cardPaginationNumber;
+  //   if (num == 1) {
+  //     if (
+  //       cardsLen % 5 == 0 &&
+  //       cardPaginationNumber < Math.floor(cardsLen / 5)
+  //     ) {
+  //       setCardPaginationNumber(cardPaginationNumber + 1);
+  //       newNum = newNum + 1;
+  //     } else if (
+  //       cardsLen % 5 !== 0 &&
+  //       cardPaginationNumber < Math.ceil(cardsLen / 5)
+  //     ) {
+  //       setCardPaginationNumber(cardPaginationNumber + 1);
+  //       newNum = newNum + 1;
+  //     }
+  //   } else if (num == -1 && cardPaginationNumber > 1) {
+  //     setCardPaginationNumber(cardPaginationNumber - 1);
+  //     newNum = newNum - 1;
+  //   }
 
-    if (newNum !== cardPaginationNumber) {
-      await getCards(db, userId, newNum)
-        .then((result) => {
-          setCardsData(result.cards);
-        })
-        .catch((err) => {
-          Toast.show({
-            type: "error",
-            text1: "Database Error1",
-            position: "bottom",
-            visibilityTime: 4000,
-            autoHide: true,
-          });
-        });
-    }
-  };
+  //   if (newNum !== cardPaginationNumber) {
+  //     await getCards(db, userId, newNum)
+  //       .then((result) => {
+  //         setCardsData(result.cards);
+  //       })
+  //       .catch((err) => {
+  //         Toast.show({
+  //           type: "error",
+  //           text1: "Database Error1",
+  //           position: "bottom",
+  //           visibilityTime: 4000,
+  //           autoHide: true,
+  //         });
+  //       });
+  //   }
+  // };
 
   const handleNewCard = async () => {
     // console.log(selectedTypeofCard, cardName, balance, cardId);
@@ -295,7 +293,7 @@ const Cards = (props) => {
         await insertIntoCardDetails(
           db,
           userId,
-          cardsLen + 1,
+          cardsData.length + 1,
           cardName,
           parseFloat(balance),
           cardId,
@@ -311,16 +309,15 @@ const Cards = (props) => {
         if (cardAdded !== null) {
           if (cardAdded == true) {
             let get = null;
-            await getCards(db, userId, 1)
+            await getCards(db, userId)
               .then((result) => {
                 get = result;
               })
               .catch((err) => {});
             if (get !== null) {
               setCardsData(get.cards);
-              setCardPaginationNumber(1);
+              // setCardPaginationNumber(1);
               setNewCard(false);
-              setCardsLen(get.count);
               setCardId("");
               setCardName("");
               setBalance("");
@@ -403,11 +400,10 @@ const Cards = (props) => {
       })
       .catch((err) => {});
     if (deletedCard == true) {
-      await getCards(db, userId, 1)
+      await getCards(db, userId)
         .then((result) => {
           setCardsData(result.cards);
-          setCardsLen(result.count);
-          setCardPaginationNumber(1);
+          // setCardPaginationNumber(1);
           Toast.show({
             type: "success",
             text1: "Card Deleted",
@@ -713,7 +709,7 @@ const Cards = (props) => {
             </TouchableOpacity>
           </View>
         </View>
-      ) : cardsLen == 0 ? (
+      ) : cardsData.length == 0 ? (
         <View
           style={{
             alignItems: "center",

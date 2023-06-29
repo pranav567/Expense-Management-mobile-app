@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   TextInput,
 } from "react-native";
+import * as SQLite from "expo-sqlite";
 
 import { Picker } from "@react-native-picker/picker";
 import BottomNavigator from "../components/bottomNavigator";
@@ -34,11 +35,13 @@ import {
 import { suggestions } from "../suggestions";
 import LogoutModal from "../components/logoutModal";
 import { useSelector, useDispatch } from "react-redux";
+import { getCards, getSpendingDetails, transactionLength } from "../queries";
 //#393e46
 
 // const expenseCategoryData = ["Travel", "Bank", "Food", "Shopping", "other"];
 
 const AddTransaction = ({ navigation }) => {
+  const db = SQLite.openDatabase("ExpenseManagement.db");
   const auth = getAuth(app);
   const firestore = getFirestore(app);
 
@@ -47,90 +50,73 @@ const AddTransaction = ({ navigation }) => {
   const [unnecessary, setUnnecessary] = useState(null);
   const [recurring, setRecurring] = useState(null);
   const [amountInvolved, setAmountInvolved] = useState("");
-  // const [expenseClassification, setExpenseClassification] = useState("");
-  // const [from, setFrom] = useState("");
-  const [fromObj, setFromObj] = useState(null);
-  const [toObj, setToObj] = useState(null);
-  // const [to, setTo] = useState("");
-  // const [expensePicker, setExpensePicker] = useState(expenseCategoryData);
-  // const [otherCategory, setOtherCategory] = useState("");
+  const [fromObj, setFromObj] = useState("-1");
+  const [toObj, setToObj] = useState("-1");
   const [description, setDescription] = useState("");
   const [wordCount, setWordCount] = useState("0");
   const [transactions, setTransactions] = useState([]);
-  const [docId, setDocId] = useState("");
+  const [transLength, setTransLength] = useState(0);
+  const [userId, setUserId] = useState("");
   const [domains, setDomains] = useState([]);
   const [receive, setReceive] = useState("");
   const [spent, setSpent] = useState("");
 
   const logoutModal = useSelector((state) => state.logoutModal.logoutModal);
 
-  const handleFromChange = (itemValue, itemIndex) => {
-    setFromObj(JSON.parse(itemValue));
-  };
-
-  const stringifyFrom = () => {
-    return JSON.stringify(fromObj);
-  };
-
-  const handleToChange = (itemValue, itemIndex) => {
-    // console.log(`hell - ${itemValue}`);
-    setToObj(JSON.parse(itemValue));
-  };
-
-  const stringifyTo = () => {
-    return JSON.stringify(toObj);
-  };
-
   useEffect(() => {
-    async function storeData() {
-      let uid = "";
-      try {
-        await new Promise((resolve, reject) => {
-          onAuthStateChanged(auth, (user) => {
-            if (user) {
-              // User is logged in, get user data
-              uid = user.uid;
-              resolve();
-            } else {
-              // User is not logged in
-              navigation.navigate("Login");
-              reject();
+    const setData = async () => {
+      let storedId = await AsyncStorage.getItem("userId");
+      if (storedId !== null) {
+        storedId = parseInt(storedId);
+        setUserId(storedId);
+
+        // now set cards;
+        // setCardsList(dataUser.cards);
+        // setTransactions(dataUser.transactions);
+        // setSpent(dataUser.expenditure);
+        // setReceive(dataUser.received);
+        let tmpCards = false;
+        let tmpLength = false;
+        let tmpSpent = false;
+        let tmpRcvd = false;
+
+        await getCards(db, storedId)
+          .then((result) => {
+            setCardsList(result.cards);
+            tmpCards = true;
+          })
+          .catch((err) => {});
+
+        await getSpendingDetails(db, storedId)
+          .then((res) => {
+            if (res !== null) {
+              setSpent(res.expenditure);
+              setReceive(res.received);
+              tmpSpent = true;
+              tmpRcvd = true;
             }
+          })
+          .catch((err) => {});
+
+        await transactionLength(db, storedId)
+          .then((res) => {
+            setTransLength(res);
+            tmpLength = true;
+          })
+          .catch((err) => {});
+
+        if (!tmpCards || !tmpLength || !tmpRcvd || !tmpSpent) {
+          Toast.show({
+            type: "error",
+            text1: "Database Error 0",
+            position: "bottom",
+            visibilityTime: 4000,
+            autoHide: true,
           });
-        });
-
-        const usersCollectionRef = collection(firestore, "users");
-        const queryDoc = query(
-          usersCollectionRef,
-          where("uid", "==", uid),
-          limit(1)
-        );
-
-        const querySnapshot = await getDocs(queryDoc);
-
-        if (!querySnapshot.empty) {
-          const doc = querySnapshot.docs[0];
-          // Handle the matching document
-          const dataUser = doc.data();
-          setDocId(doc.id);
-          setCardsList(dataUser.cards);
-          setTransactions(dataUser.transactions);
-          setSpent(dataUser.expenditure);
-          setReceive(dataUser.received);
-          // console.log(userData);
-        } else {
-          // No matching document found
-          navigation.navigate("Login");
-          // console.log("User document does not exist");
         }
-      } catch (error) {
-        // Handle error
-        // console.log(error);
-        navigation.navigate("Login");
       }
-    }
-
-    storeData();
+    };
+    setData();
   }, []);
 
   const handleAmountChange = (text) => {
@@ -169,164 +155,194 @@ const AddTransaction = ({ navigation }) => {
 
   const handleAddTransaction = async () => {
     let data = {};
-    let showToast = true;
-    if (transactionType !== null) {
+    if (
+      transactionType !== null &&
+      amountInvolved !== "" &&
+      parseFloat(amountInvolved) > 0 &&
+      description !== "" &&
+      unnecessary !== null &&
+      recurring !== null &&
+      fromObj !== toObj
+    ) {
       data["transactionType"] = transactionType;
-      if (amountInvolved !== "" && parseFloat(amountInvolved) > 0) {
-        const amount = parseFloat(amountInvolved);
-        data["amount"] = amount;
-        if (description !== "") {
-          data["description"] = description;
-          if (transactionType == "Internal Transfer") {
-            if (fromObj !== null && toObj !== null && compareCards()) {
-              data["from"] = fromObj;
-              data["to"] = toObj;
-              showToast = true;
-            } else showToast = false;
-          } else if (transactionType == "Spent") {
-            // console.log(`hello - ${compareCards()}`);
-            if (
-              fromObj !== null &&
-              compareCards() &&
-              unnecessary !== null &&
-              recurring !== null
-            ) {
-              data["from"] = fromObj;
-              if (toObj !== null) data["to"] = toObj;
-              if (unnecessary === "Yes") data["unnecessary"] = true;
-              else data["unnecessary"] = false;
-              if (recurring === "Yes") data["recurring"] = true;
-              else data["recurring"] = false;
-              showToast = true;
-            } else showToast = false;
-          } else if (transactionType == "Received") {
-            if (toObj !== null) {
-              data["to"] = toObj;
-              showToast = true;
-            } else showToast = false;
-          }
-          // console.log(data);
-          if (!showToast) {
-            Toast.show({
-              type: "error",
-              text1: "Incomplete Form",
-              text2: "Fill all required Fields",
-              position: "bottom",
-              visibilityTime: 4000,
-              autoHide: true,
-            });
-          } else {
-            data["description"] = description;
-            data["date"] = new Date();
-            let transactionId = 1;
-            if (transactions.length > 0) {
-              transactionId =
-                transactions[transactions.length - 1].transactionId + 1;
-            }
-            data["transactionId"] = transactionId;
-            transactions.push(data);
+      const amount = parseFloat(amountInvolved);
+      data["amount"] = amount;
+      data["description"] = description;
+      if (unnecessary === "Yes") data["unnecessary"] = true;
+      else data["unnecessary"] = false;
+      if (recurring === "Yes") data["recurring"] = true;
+      else data["recurring"] = false;
+      data["from"] = fromObj;
+      data["to"] = toObj;
+      const currentDate = new Date();
+      const isoDateString = currentDate.toISOString();
+      data["date"] = isoDateString;
+      data["transactionId"] = transLength + 1;
 
-            //update balance in cards
-            let arr = cardsList;
-            for (let i = 0; i < arr.length; i++) {
-              if (fromObj !== null && !("mode" in fromObj)) {
-                if (
-                  fromObj.cardName == arr[i].cardName &&
-                  fromObj.uniqueId == arr[i].uniqueId &&
-                  fromObj.type == arr[i].type
-                ) {
-                  arr[i].balance =
-                    parseFloat(arr[i].balance) - parseFloat(amountInvolved);
-                }
-              }
-              if (toObj !== null && !("mode" in toObj)) {
-                if (
-                  toObj.cardName == arr[i].cardName &&
-                  toObj.uniqueId == arr[i].uniqueId &&
-                  toObj.type == arr[i].type
-                ) {
-                  arr[i].balance =
-                    parseFloat(arr[i].balance) + parseFloat(amountInvolved);
-                }
-              }
-            }
-            let fieldsToUpdate =
-              transactionType == "Received"
-                ? {
-                    transactions: transactions,
-                    cards: arr,
-                    received: parseFloat(receive) + parseFloat(amountInvolved),
-                  }
-                : {
-                    transactions: transactions,
-                    cards: arr,
-                    expenditure: parseFloat(spent) + parseFloat(amountInvolved),
-                  };
-            try {
-              const documentRef = doc(firestore, "users", docId);
-              await updateDoc(documentRef, fieldsToUpdate);
-              // setCardsData(arr);
-              Toast.show({
-                type: "success",
-                text1: "Transaction added",
-                // text2: "Fill all required Fields",
-                position: "bottom",
-                visibilityTime: 4000,
-                autoHide: true,
-              });
-              setTransactionType(null);
-              setUnnecessary(null);
-              setRecurring(null);
-              setAmountInvolved("");
-              // setExpenseClassification("");
-              setAmountInvolved("");
-              setFromObj(null);
-              setToObj(null);
-              setDescription("");
-              setWordCount("0");
-              navigation.navigate("Home");
-            } catch (error) {
-              console.log(error);
-              Toast.show({
-                type: "error",
-                text1: "Database issue!",
-                text2: "Try again later!",
-                position: "bottom",
-                visibilityTime: 4000,
-                autoHide: true,
-              });
-            }
-          }
-        } else {
-          Toast.show({
-            type: "error",
-            text1: "Incomplete Form",
-            text2: "Add description (can use suggestions)",
-            position: "bottom",
-            visibilityTime: 4000,
-            autoHide: true,
-          });
-        }
-      } else {
-        Toast.show({
-          type: "error",
-          text1: "Amount field",
-          text2: "Enter Ammount! (input only numbers)",
-          position: "bottom",
-          visibilityTime: 4000,
-          autoHide: true,
-        });
+      let newSpent = spent;
+      let newReceive = receive;
+      let fromBalance =
+        fromObj == "-1"
+          ? null
+          : cardsList.filter((obj) => {
+              return obj.cardNum == parseInt(fromObj) && obj.userId == userId;
+            })[0].balance;
+      let toBalance =
+        toObj == "-1" || toObj == "-2"
+          ? null
+          : cardsList.filter((obj) => {
+              return obj.cardNum == parseInt(toObj) && obj.userId == userId;
+            })[0].balance;
+      if (transactionType == "Internal Transfer") {
+        if (fromBalance !== null) fromBalance -= amount;
+        if (toBalance !== null) toBalance += amount;
+      } else if (transactionType == "Spent") {
+        newSpent += amount;
+        if (fromBalance !== null) fromBalance -= amount;
+        if (toBalance !== null) toBalance += amount;
+      } else if (transactionType == "Received") {
+        newReceive += amount;
+        if (fromBalance !== null) fromBalance -= amount;
+        if (toBalance !== null) toBalance += amount;
       }
+
+      data["spent"] = newSpent;
+      data["receive"] = newReceive;
+
+      data["fromBalance"] = fromBalance;
+      data["toBalance"] = toBalance;
+
+      console.log(data);
     } else {
+      console.log(
+        transactionType,
+        fromObj,
+        toObj,
+        description,
+        amountInvolved,
+        unnecessary,
+        recurring
+      );
       Toast.show({
         type: "error",
-        text1: "Transaction Type field",
-        text2: "Select any one options!",
+        text1: "Incomplete Form",
+        text2: "Fill all required Fields",
         position: "bottom",
         visibilityTime: 4000,
         autoHide: true,
       });
     }
+    // else {
+    //         data["description"] = description;
+    //         data["date"] = new Date();
+    //         let transactionId = 1;
+    //         if (transactions.length > 0) {
+    //           transactionId =
+    //             transactions[transactions.length - 1].transactionId + 1;
+    //         }
+    //         data["transactionId"] = transactionId;
+    //         transactions.push(data);
+    //         //update balance in cards
+    //         let arr = cardsList;
+    //         for (let i = 0; i < arr.length; i++) {
+    //           if (fromObj !== null && !("mode" in fromObj)) {
+    //             if (
+    //               fromObj.cardName == arr[i].cardName &&
+    //               fromObj.uniqueId == arr[i].uniqueId &&
+    //               fromObj.type == arr[i].type
+    //             ) {
+    //               arr[i].balance =
+    //                 parseFloat(arr[i].balance) - parseFloat(amountInvolved);
+    //             }
+    //           }
+    //           if (toObj !== null && !("mode" in toObj)) {
+    //             if (
+    //               toObj.cardName == arr[i].cardName &&
+    //               toObj.uniqueId == arr[i].uniqueId &&
+    //               toObj.type == arr[i].type
+    //             ) {
+    //               arr[i].balance =
+    //                 parseFloat(arr[i].balance) + parseFloat(amountInvolved);
+    //             }
+    //           }
+    //         }
+    //         let fieldsToUpdate =
+    //           transactionType == "Received"
+    //             ? {
+    //                 transactions: transactions,
+    //                 cards: arr,
+    //                 received: parseFloat(receive) + parseFloat(amountInvolved),
+    //               }
+    //             : {
+    //                 transactions: transactions,
+    //                 cards: arr,
+    //                 expenditure: parseFloat(spent) + parseFloat(amountInvolved),
+    //               };
+    //         try {
+    //           const documentRef = doc(firestore, "users", docId);
+    //           await updateDoc(documentRef, fieldsToUpdate);
+    //           // setCardsData(arr);
+    //           Toast.show({
+    //             type: "success",
+    //             text1: "Transaction added",
+    //             // text2: "Fill all required Fields",
+    //             position: "bottom",
+    //             visibilityTime: 4000,
+    //             autoHide: true,
+    //           });
+    //           setTransactionType(null);
+    //           setUnnecessary(null);
+    //           setRecurring(null);
+    //           setAmountInvolved("");
+    //           // setExpenseClassification("");
+    //           setAmountInvolved("");
+    //           setFromObj(null);
+    //           setToObj(null);
+    //           setDescription("");
+    //           setWordCount("0");
+    //           navigation.navigate("Home");
+    //         } catch (error) {
+    //           console.log(error);
+    //           Toast.show({
+    //             type: "error",
+    //             text1: "Database issue!",
+    //             text2: "Try again later!",
+    //             position: "bottom",
+    //             visibilityTime: 4000,
+    //             autoHide: true,
+    //           });
+    //         }
+    //       }
+    //     } else {
+    //       Toast.show({
+    //         type: "error",
+    //         text1: "Incomplete Form",
+    //         text2: "Add description (can use suggestions)",
+    //         position: "bottom",
+    //         visibilityTime: 4000,
+    //         autoHide: true,
+    //       });
+    //     }
+    //   } else {
+    //     Toast.show({
+    //       type: "error",
+    //       text1: "Amount field",
+    //       text2: "Enter Ammount! (input only numbers)",
+    //       position: "bottom",
+    //       visibilityTime: 4000,
+    //       autoHide: true,
+    //     });
+    //   }
+    // } else {
+    //   Toast.show({
+    //     type: "error",
+    //     text1: "Transaction Type field",
+    //     text2: "Select any one options!",
+    //     position: "bottom",
+    //     visibilityTime: 4000,
+    //     autoHide: true,
+    //   });
+    // }
   };
 
   const handleDescription = (text) => {
@@ -495,10 +511,11 @@ const AddTransaction = ({ navigation }) => {
                   else {
                     // setTo("metro");
                     if (cardsList.length > 0) {
-                      setToObj(cardsList[0]);
+                      setToObj(cardsList[0].cardNum.toString());
                     } else {
-                      setToObj({ mode: "cash" });
+                      setToObj("-1");
                     }
+                    setFromObj("-1");
                     setTransactionType("Received");
                   }
                 }}
@@ -522,12 +539,11 @@ const AddTransaction = ({ navigation }) => {
                     // if (cardsList.length > 1) setTo("metro");
                     // setExpenseClassification("Travel");
                     if (cardsList.length > 0) {
-                      setFromObj(cardsList[0]);
-                      setToObj({ mode: "none" });
+                      setFromObj(cardsList[0].cardNum.toString());
                     } else {
-                      setFromObj({ mode: "cash" });
-                      setToObj(null);
+                      setFromObj("-1");
                     }
+                    setToObj("-2");
                   }
                 }}
               >
@@ -551,11 +567,11 @@ const AddTransaction = ({ navigation }) => {
                     // setFrom("metro");
                     // setTo("metro");
                     if (cardsList.length > 0) {
-                      setFromObj(cardsList[0]);
-                      setToObj(cardsList[0]);
+                      setFromObj(cardsList[0].cardNum.toString());
+                      setToObj(cardsList[0].cardNum.toString());
                     } else {
-                      setFromObj({ mode: "cash" });
-                      setToObj({ mode: "cash" });
+                      setFromObj("-1");
+                      setToObj("-1");
                     }
                   }
                 }}
@@ -600,20 +616,19 @@ const AddTransaction = ({ navigation }) => {
                 </Text>
                 <Picker
                   style={styles.rcvdPicker1}
-                  selectedValue={stringifyTo()}
-                  onValueChange={handleToChange}
+                  selectedValue={toObj}
+                  onValueChange={(itemValue) => {
+                    setToObj(itemValue);
+                  }}
                 >
                   {cardsList.map((obj, id) => (
                     <Picker.Item
                       key={id}
-                      label={`${obj.cardName}`}
-                      value={JSON.stringify(obj)}
+                      label={`${obj.cardName} - Rs.${obj.balance}`}
+                      value={obj.cardNum.toString()}
                     />
                   ))}
-                  <Picker.Item
-                    label="cash"
-                    value={JSON.stringify({ mode: "cash" })}
-                  />
+                  <Picker.Item label="cash" value={"-1"} />
                 </Picker>
               </View>
             </>
@@ -626,20 +641,19 @@ const AddTransaction = ({ navigation }) => {
                 </Text>
                 <Picker
                   style={styles.rcvdPicker1}
-                  selectedValue={stringifyFrom()}
-                  onValueChange={handleFromChange}
+                  selectedValue={fromObj}
+                  onValueChange={(itemValue) => {
+                    setFromObj(itemValue);
+                  }}
                 >
                   {cardsList.map((obj, id) => (
                     <Picker.Item
                       key={id}
-                      label={`${obj.cardName}-Rs.${obj.balance}`}
-                      value={JSON.stringify(obj)}
+                      label={`${obj.cardName} - Rs.${obj.balance}`}
+                      value={obj.cardNum.toString()}
                     />
                   ))}
-                  <Picker.Item
-                    label="cash"
-                    value={JSON.stringify({ mode: "cash" })}
-                  />
+                  <Picker.Item label="cash" value={"-1"} />
                 </Picker>
               </View>
               <View style={styles.rcvdField1}>
@@ -651,69 +665,27 @@ const AddTransaction = ({ navigation }) => {
                 </Text>
                 <Picker
                   style={styles.rcvdPicker1}
-                  selectedValue={stringifyTo()}
-                  onValueChange={handleToChange}
+                  selectedValue={toObj}
+                  onValueChange={(itemValue) => {
+                    setToObj(itemValue);
+                  }}
                 >
-                  <Picker.Item
-                    label="None"
-                    value={JSON.stringify({ mode: "none" })}
-                  />
-                  {cardsList.map((obj, id) => (
-                    <Picker.Item
-                      key={id}
-                      label={`${obj.cardName}-Rs.${obj.balance}`}
-                      value={JSON.stringify(obj)}
-                    />
-                  ))}
+                  <Picker.Item label="None" value={"-2"} />
+                  {cardsList
+                    .filter((o) => {
+                      return o.type !== "bank";
+                    })
+                    .map((obj, id) => (
+                      <Picker.Item
+                        key={id}
+                        label={`${obj.cardName} - Rs.${obj.balance}`}
+                        value={obj.cardNum.toString()}
+                      />
+                    ))}
                 </Picker>
               </View>
 
               {/* <View style={styles.rcvdField1}>
-                <Text style={{ fontSize: 18, color: "#393e46" }}>
-                  Expense Classification{" "}
-                  <Text style={{ color: "#E49393" }}>*</Text>
-                </Text>
-                <Picker
-                  style={styles.rcvdPicker1}
-                  selectedValue={expenseClassification}
-                  onValueChange={(itemValue) => {
-                    setExpenseClassification(itemValue);
-                  }}
-                >
-                  {expensePicker.map((obj, id) => (
-                    <Picker.Item key={id} label={obj} value={obj} />
-                  ))}
-                </Picker>
-              </View> */}
-              {/* {expenseClassification == "other" ? (
-                <View style={styles.rcvdField1}>
-                  <Text style={{ fontSize: 18, color: "#393e46" }}>
-                    Mention Expense Category{" "}
-                    <Text style={{ color: "#E49393" }}>*</Text>
-                  </Text>
-                  <View style={styles.category}>
-                    <TextInput
-                      style={{
-                        width: "90%",
-                        fontSize: 15,
-                      }}
-                      value={otherCategory}
-                      placeholder="Enter Category"
-                      onChangeText={setOtherCategory}
-                    />
-                    <TouchableOpacity
-                      style={{ marginTop: 3 }}
-                      onPress={() => handleAddExpenseCategory()}
-                    >
-                      <Ionicons name="add-sharp" size={25} />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              ) : (
-                <></>
-              )} */}
-
-              <View style={styles.rcvdField1}>
                 <Text style={{ fontSize: 18, color: "#393e46" }}>
                   Unnecessary Expenditure{" "}
                   <Text style={{ color: "#E49393" }}>*</Text>{" "}
@@ -790,7 +762,7 @@ const AddTransaction = ({ navigation }) => {
                   </TouchableOpacity>
                   <Text style={{ marginRight: 15 }}>No</Text>
                 </View>
-              </View>
+              </View> */}
             </>
           ) : transactionType == "Internal Transfer" ? (
             <>
@@ -800,20 +772,19 @@ const AddTransaction = ({ navigation }) => {
                 </Text>
                 <Picker
                   style={styles.rcvdPicker1}
-                  selectedValue={stringifyFrom()}
-                  onValueChange={handleFromChange}
+                  selectedValue={fromObj}
+                  onValueChange={(itemValue) => {
+                    setFromObj(itemValue);
+                  }}
                 >
                   {cardsList.map((obj, id) => (
                     <Picker.Item
                       key={id}
-                      label={`${obj.cardName}-Rs.${obj.balance}`}
-                      value={JSON.stringify(obj)}
+                      label={`${obj.cardName} - Rs.${obj.balance}`}
+                      value={obj.cardNum.toString()}
                     />
                   ))}
-                  <Picker.Item
-                    label="cash"
-                    value={JSON.stringify({ mode: "cash" })}
-                  />
+                  <Picker.Item label="cash" value={"-1"} />
                 </Picker>
               </View>
               <View style={styles.intField1}>
@@ -822,26 +793,100 @@ const AddTransaction = ({ navigation }) => {
                 </Text>
                 <Picker
                   style={styles.rcvdPicker1}
-                  selectedValue={stringifyTo()}
-                  onValueChange={handleToChange}
+                  selectedValue={toObj}
+                  onValueChange={(itemValue) => {
+                    setToObj(itemValue);
+                  }}
                 >
                   {cardsList.map((obj, id) => (
                     <Picker.Item
                       key={id}
-                      label={`${obj.cardName}-Rs.${obj.balance}`}
-                      value={JSON.stringify(obj)}
+                      label={`${obj.cardName} - Rs.${obj.balance}`}
+                      value={obj.cardNum.toString()}
                     />
                   ))}
-                  <Picker.Item
-                    label="cash"
-                    value={JSON.stringify({ mode: "cash" })}
-                  />
+                  <Picker.Item label="cash" value={"-1"} />
                 </Picker>
               </View>
             </>
           ) : (
             <></>
           )}
+          <View style={styles.rcvdField1}>
+            <Text style={{ fontSize: 18, color: "#393e46" }}>
+              Unnecessary Transaction{" "}
+              <Text style={{ color: "#E49393" }}>*</Text>{" "}
+            </Text>
+            <View style={styles.radioChoice1}>
+              <TouchableOpacity
+                style={[
+                  styles.radioButton,
+                  unnecessary === "Yes" && styles.radioButtonSelected,
+                ]}
+                onPress={() => {
+                  if (unnecessary === "Yes") setUnnecessary(null);
+                  else setUnnecessary("Yes");
+                }}
+              >
+                {unnecessary === "Yes" && (
+                  <View style={styles.radioButtonInner} />
+                )}
+              </TouchableOpacity>
+              <Text style={{ marginRight: 15 }}>Yes</Text>
+
+              <TouchableOpacity
+                style={[
+                  styles.radioButton,
+                  unnecessary === "No" && styles.radioButtonSelected,
+                ]}
+                onPress={() => {
+                  if (unnecessary === "No") setUnnecessary(null);
+                  else setUnnecessary("No");
+                }}
+              >
+                {unnecessary === "No" && (
+                  <View style={styles.radioButtonInner} />
+                )}
+              </TouchableOpacity>
+              <Text style={{ marginRight: 15 }}>No</Text>
+            </View>
+          </View>
+          <View style={styles.rcvdField1}>
+            <Text style={{ fontSize: 18, color: "#393e46" }}>
+              Recurring Transaction <Text style={{ color: "#E49393" }}>*</Text>{" "}
+            </Text>
+            <View style={styles.radioChoice1}>
+              <TouchableOpacity
+                style={[
+                  styles.radioButton,
+                  recurring === "Yes" && styles.radioButtonSelected,
+                ]}
+                onPress={() => {
+                  if (recurring === "Yes") setRecurring(null);
+                  else setRecurring("Yes");
+                }}
+              >
+                {recurring === "Yes" && (
+                  <View style={styles.radioButtonInner} />
+                )}
+              </TouchableOpacity>
+              <Text style={{ marginRight: 15 }}>Yes</Text>
+
+              <TouchableOpacity
+                style={[
+                  styles.radioButton,
+                  recurring === "No" && styles.radioButtonSelected,
+                ]}
+                onPress={() => {
+                  if (recurring === "No") setRecurring(null);
+                  else setRecurring("No");
+                }}
+              >
+                {recurring === "No" && <View style={styles.radioButtonInner} />}
+              </TouchableOpacity>
+              <Text style={{ marginRight: 15 }}>No</Text>
+            </View>
+          </View>
           <View style={styles.describe}>
             <Text style={{ fontSize: 18, color: "#393e46" }}>
               Description{" "}

@@ -26,6 +26,8 @@ import TransactionModal from "../components/transactionModal";
 import LogoutModal from "../components/logoutModal";
 import { useSelector, useDispatch } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { transactionLength } from "../queries";
 
 const appDescription = [
   "The app's designed to help you track your expenses, income, and internal transfers easily.",
@@ -39,10 +41,12 @@ const appDescription = [
 ];
 
 const Home = ({ navigation }) => {
+  const db = SQLite.openDatabase("ExpenseManagement.db");
   const auth = getAuth(app);
   const firestore = getFirestore(app);
   const [docId, setDocId] = useState("");
   const [transactionPresent, setTransactionPresent] = useState(0);
+  const [userId, setUserId] = useState(0);
   const transactionModal = useSelector(
     (state) => state.transactionModal.transactionModal
   );
@@ -50,47 +54,68 @@ const Home = ({ navigation }) => {
   // console.log(logoutModal);
 
   useEffect(() => {
-    async function storeData() {
-      let uid = "";
-      try {
-        await new Promise((resolve, reject) => {
-          onAuthStateChanged(auth, (user) => {
-            if (user) {
-              uid = user.uid;
-              resolve();
+    const setData = async () => {
+      let storedPin = await AsyncStorage.getItem("userId");
+      if (storedPin !== null) {
+        storedPin = parseInt(storedPin);
+        setUserId(storedPin);
+
+        await transactionLength(db, storedPin)
+          .then((res) => {
+            if (res > 0) {
+              setTransactionPresent(2);
             } else {
-              navigation.navigate("Login");
-              reject();
+              setTransactionPresent(1);
             }
-          });
-        });
-
-        const usersCollectionRef = collection(firestore, "users");
-        const queryDoc = query(
-          usersCollectionRef,
-          where("uid", "==", uid),
-          limit(1)
-        );
-
-        const querySnapshot = await getDocs(queryDoc);
-
-        if (!querySnapshot.empty) {
-          const doc = querySnapshot.docs[0];
-          // Handle the matching document
-          const dataUser = doc.data();
-          if (dataUser.transactions.length > 0) setTransactionPresent(2);
-          else setTransactionPresent(1);
-          setDocId(doc.id);
-        } else {
-          navigation.navigate("Login");
-        }
-      } catch (error) {
-        navigation.navigate("Login");
+          })
+          .catch((err) => {});
       }
-    }
-
-    storeData();
+    };
+    setData();
   }, []);
+
+  // useEffect(() => {
+  //   async function storeData() {
+  //     let uid = "";
+  //     try {
+  //       await new Promise((resolve, reject) => {
+  //         onAuthStateChanged(auth, (user) => {
+  //           if (user) {
+  //             uid = user.uid;
+  //             resolve();
+  //           } else {
+  //             navigation.navigate("Login");
+  //             reject();
+  //           }
+  //         });
+  //       });
+
+  //       const usersCollectionRef = collection(firestore, "users");
+  //       const queryDoc = query(
+  //         usersCollectionRef,
+  //         where("uid", "==", uid),
+  //         limit(1)
+  //       );
+
+  //       const querySnapshot = await getDocs(queryDoc);
+
+  //       if (!querySnapshot.empty) {
+  //         const doc = querySnapshot.docs[0];
+  //         // Handle the matching document
+  //         const dataUser = doc.data();
+  //         if (dataUser.transactions.length > 0) setTransactionPresent(2);
+  //         else setTransactionPresent(1);
+  //         setDocId(doc.id);
+  //       } else {
+  //         navigation.navigate("Login");
+  //       }
+  //     } catch (error) {
+  //       navigation.navigate("Login");
+  //     }
+  //   }
+
+  //   storeData();
+  // }, []);
 
   const styles = StyleSheet.create({
     container: {
@@ -127,7 +152,7 @@ const Home = ({ navigation }) => {
         {transactionPresent == 2 ? (
           <ScrollView showsVerticalScrollIndicator={false}>
             <View style={{ flexDirection: "column" }}>
-              {docId !== "" ? <StatsComponent docId={docId} /> : <></>}
+              {userId !== 0 ? <StatsComponent /> : <></>}
               <View
                 style={{
                   borderTopWidth: 1,
@@ -138,7 +163,7 @@ const Home = ({ navigation }) => {
                   // width: "60%",
                 }}
               ></View>
-              {docId !== "" ? <RecentTransactions docId={docId} /> : <></>}
+              {userId !== 0 ? <RecentTransactions /> : <></>}
             </View>
           </ScrollView>
         ) : transactionPresent == 1 ? (

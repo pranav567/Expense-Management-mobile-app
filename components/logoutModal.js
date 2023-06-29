@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import * as SQLite from "expo-sqlite";
 import Toast from "react-native-toast-message";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, StackActions } from "@react-navigation/native";
 import { getAuth } from "firebase/auth";
 import app from "../firebaseConfig";
 // import ExpoBlurView from "expo-blur";
@@ -76,6 +76,7 @@ const LogoutModal = () => {
   const handleLogout = async () => {
     try {
       await AsyncStorage.setItem("userId", "");
+      navigation.dispatch(StackActions.popToTop());
       navigation.navigate("Login");
       dispatch(setLogoutModal(false));
     } catch (error) {

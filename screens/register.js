@@ -30,13 +30,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Register = ({ navigation }) => {
   // console.log(firebase);
-  const [name, setName] = useState("");
-  const [password, setPassword] = useState("");
+  const [name, setName] = useState("Pranav Nair");
+  const [password, setPassword] = useState("123");
   const [showPassword, setShowPassword] = useState(false);
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("123");
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [validPassword, setValidPassword] = useState(false);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState("pranavpn7@gmail.com");
   // const [mobile, setMobile] = useState("");
 
   const verifyEmail = () => {
@@ -140,7 +140,7 @@ const Register = ({ navigation }) => {
             } else {
               await AsyncStorage.setItem("userId", dataInserted.toString());
               await createCardsDetailsTable(db);
-              // await createTransactionDetailsTable(db);
+              await createTransactionDetailsTable(db);
               Toast.show({
                 type: "success",
                 text1: "Registration Successful",

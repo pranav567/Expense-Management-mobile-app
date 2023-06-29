@@ -17,20 +17,20 @@ const statsComponent = (props) => {
   const [monthlyReceived, setMonthlyReceived] = useState("");
   const [monthlyHeader, setMonthlyHeader] = useState("false");
 
-  const getFormattedDate = (dateObj) => {
-    const transactionDate = dateObj.toDate();
-    // const day = String(transactionDate.getDate()).padStart(2, "0");
-    const month = String(transactionDate.getMonth() + 1).padStart(2, "0");
-    // const year = String(transactionDate.getFullYear());
+  const getFormattedDate = (dateStr) => {
+    const dateObj = new Date(dateStr);
 
-    // const formattedDate = `${day}/${month}/${year}`;
-    return month;
-    // Get current time
-    // const hours = String(transactionDate.getHours() % 12 || 12).padStart(2, "0");
-    // const minutes = String(transactionDate.getMinutes()).padStart(2, "0");
-    // const meridiem = transactionDate.getHours() >= 12 ? "PM" : "AM";
+    const formattedDate = `${String(
+      dateObj.getDate().padStart(2, "0")
+    )}/${String(dateObj.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}/${dateObj.getFullYear()}`;
+    const formattedTime = `${String(
+      dateObj.getHours().padStart(2, "0")
+    )}:${String(dateObj.getMinutes().padStart(2, "0"))}`;
 
-    // const formattedTime = `${hours}:${minutes} ${meridiem}`;
+    return formattedDate;
   };
 
   useEffect(() => {
