@@ -9,6 +9,9 @@ import {
 } from "react-native";
 import * as SQLite from "expo-sqlite";
 
+import React from "react";
+import { useFocusEffect } from "@react-navigation/native";
+
 import { Picker } from "@react-native-picker/picker";
 import BottomNavigator from "../components/bottomNavigator";
 import Header from "../components/header";
@@ -35,7 +38,14 @@ import {
 import { suggestions } from "../suggestions";
 import LogoutModal from "../components/logoutModal";
 import { useSelector, useDispatch } from "react-redux";
-import { getCards, getSpendingDetails, transactionLength } from "../queries";
+import {
+  getCards,
+  getSpendingDetails,
+  insertIntoTransactionDetails,
+  transactionLength,
+  updateCardBalance,
+  updateTransactionUserDetails,
+} from "../queries";
 //#393e46
 
 // const expenseCategoryData = ["Travel", "Bank", "Food", "Shopping", "other"];
@@ -54,7 +64,6 @@ const AddTransaction = ({ navigation }) => {
   const [toObj, setToObj] = useState("-1");
   const [description, setDescription] = useState("");
   const [wordCount, setWordCount] = useState("0");
-  const [transactions, setTransactions] = useState([]);
   const [transLength, setTransLength] = useState(0);
   const [userId, setUserId] = useState("");
   const [domains, setDomains] = useState([]);
@@ -63,61 +72,58 @@ const AddTransaction = ({ navigation }) => {
 
   const logoutModal = useSelector((state) => state.logoutModal.logoutModal);
 
-  useEffect(() => {
-    const setData = async () => {
-      let storedId = await AsyncStorage.getItem("userId");
-      if (storedId !== null) {
-        storedId = parseInt(storedId);
-        setUserId(storedId);
+  useFocusEffect(
+    React.useCallback(() => {
+      const setData = async () => {
+        let storedId = await AsyncStorage.getItem("userId");
+        if (storedId !== null) {
+          storedId = parseInt(storedId);
+          setUserId(storedId);
+          let tmpCards = false;
+          let tmpLength = false;
+          let tmpSpent = false;
+          let tmpRcvd = false;
 
-        // now set cards;
-        // setCardsList(dataUser.cards);
-        // setTransactions(dataUser.transactions);
-        // setSpent(dataUser.expenditure);
-        // setReceive(dataUser.received);
-        let tmpCards = false;
-        let tmpLength = false;
-        let tmpSpent = false;
-        let tmpRcvd = false;
+          await getCards(db, storedId)
+            .then((result) => {
+              setCardsList(result.cards);
+              tmpCards = true;
+            })
+            .catch((err) => {});
 
-        await getCards(db, storedId)
-          .then((result) => {
-            setCardsList(result.cards);
-            tmpCards = true;
-          })
-          .catch((err) => {});
+          await getSpendingDetails(db, storedId)
+            .then((res) => {
+              if (res !== null) {
+                // console.log(`hshak- ${JSON.stringify(res)}`);
+                setSpent(res.expenditure);
+                setReceive(res.received);
+                tmpSpent = true;
+                tmpRcvd = true;
+              }
+            })
+            .catch((err) => {});
 
-        await getSpendingDetails(db, storedId)
-          .then((res) => {
-            if (res !== null) {
-              setSpent(res.expenditure);
-              setReceive(res.received);
-              tmpSpent = true;
-              tmpRcvd = true;
-            }
-          })
-          .catch((err) => {});
+          await transactionLength(db, storedId)
+            .then((res) => {
+              setTransLength(res);
+              tmpLength = true;
+            })
+            .catch((err) => {});
 
-        await transactionLength(db, storedId)
-          .then((res) => {
-            setTransLength(res);
-            tmpLength = true;
-          })
-          .catch((err) => {});
-
-        if (!tmpCards || !tmpLength || !tmpRcvd || !tmpSpent) {
-          Toast.show({
-            type: "error",
-            text1: "Database Error 0",
-            position: "bottom",
-            visibilityTime: 4000,
-            autoHide: true,
-          });
+          if (!tmpCards || !tmpLength || !tmpRcvd || !tmpSpent) {
+            Toast.show({
+              type: "error",
+              text1: "Database Error 0",
+              position: "bottom",
+              visibilityTime: 4000,
+              autoHide: true,
+            });
+          }
         }
-      }
-    };
-    setData();
-  }, []);
+      };
+      setData();
+    }, [])
+  );
 
   const handleAmountChange = (text) => {
     // Remove non-numeric characters
@@ -131,26 +137,6 @@ const AddTransaction = ({ navigation }) => {
         if (value > obj.min) setDomains(obj.category);
       }
     });
-  };
-
-  const compareCards = () => {
-    if (toObj == null) return true;
-    else if ("mode" in fromObj && "mode" in toObj) {
-      if (fromObj["mode"] == toObj["mode"]) return false;
-      else return true;
-    } else {
-      if ("mode" in fromObj) return true;
-      else if ("mode" in toObj) return true;
-      else {
-        if (
-          fromObj.cardName == toObj.cardName &&
-          fromObj.uniqueId == toObj.uniqueId &&
-          fromObj.type == toObj.type
-        )
-          return false;
-        else return true;
-      }
-    }
   };
 
   const handleAddTransaction = async () => {
@@ -212,7 +198,121 @@ const AddTransaction = ({ navigation }) => {
       data["fromBalance"] = fromBalance;
       data["toBalance"] = toBalance;
 
-      console.log(data);
+      // console.log(data);
+
+      // add details to transactionDetails
+      let transactionAdded = false;
+      await insertIntoTransactionDetails(
+        db,
+        userId,
+        data.transactionId,
+        data.amount,
+        data.date,
+        data.description,
+        data.from,
+        data.to,
+        data.unnecessary,
+        data.recurring,
+        data.transactionType
+      )
+        .then((res) => {
+          if (res == true) transactionAdded = true;
+        })
+        .catch((err) => {});
+      // add details to cards
+      if (transactionAdded) {
+        let cardsUpdated = true;
+        if (parseInt(fromObj) > 0) {
+          await updateCardBalance(
+            db,
+            userId,
+            parseInt(fromObj),
+            data.fromBalance
+          )
+            .then((res) => {
+              if (!res) cardsUpdated = false;
+            })
+            .catch((err) => {
+              cardsUpdated = false;
+            });
+        }
+        if (parseInt(toObj) > 0) {
+          await updateCardBalance(db, userId, parseInt(toObj), data.toBalance)
+            .then((res) => {
+              if (!res) cardsUpdated = false;
+            })
+            .catch((err) => {
+              cardsUpdated = false;
+            });
+        }
+        if (cardsUpdated) {
+          // add details to user details
+          await updateTransactionUserDetails(
+            db,
+            data.spent,
+            data.receive,
+            userId
+          )
+            .then((res) => {
+              if (res) {
+                setTransactionType(null);
+                setAmountInvolved("");
+                setDescription("");
+                setDomains([]);
+                setFromObj("-1");
+                setReceive("");
+                setSpent("");
+                setTransLength(transLength + 1);
+                setToObj("-1");
+                setWordCount("0");
+                setUnnecessary(null);
+                setRecurring(null);
+
+                Toast.show({
+                  type: "success",
+                  text1: "Transaction added",
+                  position: "bottom",
+                  visibilityTime: 4000,
+                  autoHide: true,
+                });
+                navigation.navigate("Home");
+              } else {
+                Toast.show({
+                  type: "error",
+                  text1: "Database Error 5",
+                  position: "bottom",
+                  visibilityTime: 4000,
+                  autoHide: true,
+                });
+              }
+            })
+            .catch((err) => {
+              Toast.show({
+                type: "error",
+                text1: "Database Error 4",
+                position: "bottom",
+                visibilityTime: 4000,
+                autoHide: true,
+              });
+            });
+        } else {
+          Toast.show({
+            type: "error",
+            text1: "Database Error 3",
+            position: "bottom",
+            visibilityTime: 4000,
+            autoHide: true,
+          });
+        }
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Database Error 2",
+          position: "bottom",
+          visibilityTime: 4000,
+          autoHide: true,
+        });
+      }
     } else {
       console.log(
         transactionType,
@@ -232,117 +332,6 @@ const AddTransaction = ({ navigation }) => {
         autoHide: true,
       });
     }
-    // else {
-    //         data["description"] = description;
-    //         data["date"] = new Date();
-    //         let transactionId = 1;
-    //         if (transactions.length > 0) {
-    //           transactionId =
-    //             transactions[transactions.length - 1].transactionId + 1;
-    //         }
-    //         data["transactionId"] = transactionId;
-    //         transactions.push(data);
-    //         //update balance in cards
-    //         let arr = cardsList;
-    //         for (let i = 0; i < arr.length; i++) {
-    //           if (fromObj !== null && !("mode" in fromObj)) {
-    //             if (
-    //               fromObj.cardName == arr[i].cardName &&
-    //               fromObj.uniqueId == arr[i].uniqueId &&
-    //               fromObj.type == arr[i].type
-    //             ) {
-    //               arr[i].balance =
-    //                 parseFloat(arr[i].balance) - parseFloat(amountInvolved);
-    //             }
-    //           }
-    //           if (toObj !== null && !("mode" in toObj)) {
-    //             if (
-    //               toObj.cardName == arr[i].cardName &&
-    //               toObj.uniqueId == arr[i].uniqueId &&
-    //               toObj.type == arr[i].type
-    //             ) {
-    //               arr[i].balance =
-    //                 parseFloat(arr[i].balance) + parseFloat(amountInvolved);
-    //             }
-    //           }
-    //         }
-    //         let fieldsToUpdate =
-    //           transactionType == "Received"
-    //             ? {
-    //                 transactions: transactions,
-    //                 cards: arr,
-    //                 received: parseFloat(receive) + parseFloat(amountInvolved),
-    //               }
-    //             : {
-    //                 transactions: transactions,
-    //                 cards: arr,
-    //                 expenditure: parseFloat(spent) + parseFloat(amountInvolved),
-    //               };
-    //         try {
-    //           const documentRef = doc(firestore, "users", docId);
-    //           await updateDoc(documentRef, fieldsToUpdate);
-    //           // setCardsData(arr);
-    //           Toast.show({
-    //             type: "success",
-    //             text1: "Transaction added",
-    //             // text2: "Fill all required Fields",
-    //             position: "bottom",
-    //             visibilityTime: 4000,
-    //             autoHide: true,
-    //           });
-    //           setTransactionType(null);
-    //           setUnnecessary(null);
-    //           setRecurring(null);
-    //           setAmountInvolved("");
-    //           // setExpenseClassification("");
-    //           setAmountInvolved("");
-    //           setFromObj(null);
-    //           setToObj(null);
-    //           setDescription("");
-    //           setWordCount("0");
-    //           navigation.navigate("Home");
-    //         } catch (error) {
-    //           console.log(error);
-    //           Toast.show({
-    //             type: "error",
-    //             text1: "Database issue!",
-    //             text2: "Try again later!",
-    //             position: "bottom",
-    //             visibilityTime: 4000,
-    //             autoHide: true,
-    //           });
-    //         }
-    //       }
-    //     } else {
-    //       Toast.show({
-    //         type: "error",
-    //         text1: "Incomplete Form",
-    //         text2: "Add description (can use suggestions)",
-    //         position: "bottom",
-    //         visibilityTime: 4000,
-    //         autoHide: true,
-    //       });
-    //     }
-    //   } else {
-    //     Toast.show({
-    //       type: "error",
-    //       text1: "Amount field",
-    //       text2: "Enter Ammount! (input only numbers)",
-    //       position: "bottom",
-    //       visibilityTime: 4000,
-    //       autoHide: true,
-    //     });
-    //   }
-    // } else {
-    //   Toast.show({
-    //     type: "error",
-    //     text1: "Transaction Type field",
-    //     text2: "Select any one options!",
-    //     position: "bottom",
-    //     visibilityTime: 4000,
-    //     autoHide: true,
-    //   });
-    // }
   };
 
   const handleDescription = (text) => {
@@ -365,7 +354,7 @@ const AddTransaction = ({ navigation }) => {
       justifyContent: "flex-start",
       marginTop: 90,
       marginBottom: 80,
-      width: "85%",
+      width: "90%",
       backgroundColor: "white",
       borderWidth: 1,
       borderColor: "#d3d6db",
@@ -513,7 +502,7 @@ const AddTransaction = ({ navigation }) => {
                     if (cardsList.length > 0) {
                       setToObj(cardsList[0].cardNum.toString());
                     } else {
-                      setToObj("-1");
+                      setToObj("-2");
                     }
                     setFromObj("-1");
                     setTransactionType("Received");

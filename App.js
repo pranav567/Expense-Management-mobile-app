@@ -4,6 +4,7 @@ import Toast from "react-native-toast-message";
 
 import { Provider } from "react-redux";
 import store from "./store";
+import { StatusBar } from "expo-status-bar";
 
 const Stack = createNativeStackNavigator();
 import LandingScreen from "./screens/landingScreen";
@@ -17,10 +18,12 @@ import TestDetails from "./screens/testDetails";
 
 export default function App() {
   return (
+    // <StatusBar />
     <Provider store={store}>
       <Toast position="top" topOffset={20} />
 
       <NavigationContainer>
+        <StatusBar hidden={true} />
         <Stack.Navigator>
           <Stack.Screen
             name="Landing"
@@ -45,7 +48,7 @@ export default function App() {
           <Stack.Screen
             name="All Transactions"
             component={AllTransactions}
-            // options={{ headerShown: false }}
+            options={{ headerShown: false }}
           />
           <Stack.Screen
             name="AddTransaction"

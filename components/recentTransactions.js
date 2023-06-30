@@ -4,12 +4,17 @@ import { useState } from "react";
 import { TouchableOpacity } from "react-native";
 import { Text, View, Image, StyleSheet, ScrollView } from "react-native";
 import app from "../firebaseConfig";
+import * as SQLite from "expo-sqlite";
 import { getFirestore, doc, onSnapshot } from "firebase/firestore";
 import { useSelector, useDispatch } from "react-redux";
-import { setTransactionModal } from "../store";
-import { useNavigation } from "@react-navigation/native";
+import store, { setTransactionModal } from "../store";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { getRecentTransactions } from "../queries";
+import React from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const RecentTransactions = (props) => {
+  const db = SQLite.openDatabase("ExpenseManagement.db");
   const navigation = useNavigation();
   // console.log(props);
   const firestore = getFirestore(app);
@@ -27,31 +32,26 @@ const RecentTransactions = (props) => {
     dispatch(setTransactionModal(newObj));
   };
 
-  useEffect(() => {
-    // console.log(props.docId);
-    const userDocRef = doc(firestore, "users", props.docId);
-    const unsubscribe = onSnapshot(userDocRef, (docSnapshot) => {
-      const userData = docSnapshot.data();
-      if (userData) {
-        let arr = userData.transactions;
+  useFocusEffect(
+    React.useCallback(() => {
+      const setData = async () => {
+        let storedId = await AsyncStorage.getItem("userId");
+        if (storedId !== null) {
+          storedId = parseInt(storedId);
 
-        arr = arr.sort((a, b) => b.date.seconds - a.date.seconds);
-        setTransactions(arr);
-        // Handle the change in the 'transaction' field
-        // console.log("Transactions updated:", transactions);
-        // Update the transaction array in your other screen or component
-        // ...
-      }
-    });
-
-    return () => {
-      // Clean up the listener when the component is unmounted
-      unsubscribe();
-    };
-  }, []);
+          await getRecentTransactions(db, storedId)
+            .then((res) => {
+              setTransactions(res.transactions);
+            })
+            .catch((err) => {});
+        }
+      };
+      setData();
+    }, [])
+  );
 
   const getFormattedDate = (dateObj) => {
-    const transactionDate = dateObj.toDate();
+    const transactionDate = new Date(dateObj);
     const day = String(transactionDate.getDate()).padStart(2, "0");
     const month = String(transactionDate.getMonth() + 1).padStart(2, "0");
     const year = String(transactionDate.getFullYear());
@@ -190,7 +190,7 @@ const RecentTransactions = (props) => {
         </Text>
         <TouchableOpacity
           onPress={() => {
-            navigation.navigate("All Transactions", { docId: props.docId });
+            navigation.navigate("All Transactions");
           }}
         >
           <Text style={{ marginTop: 8 }}>show all</Text>
@@ -199,7 +199,7 @@ const RecentTransactions = (props) => {
       <View style={styles.transactionContainer}>
         {transactions.length > 0 ? (
           <ScrollView showsVerticalScrollIndicator={false}>
-            {transactions.slice(0, 4).map((obj, id) => (
+            {transactions.map((obj, id) => (
               <View key={id}>
                 <TouchableOpacity
                   onPress={() => {

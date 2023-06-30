@@ -6,7 +6,10 @@ import {
   Image,
   TouchableOpacity,
 } from "react-native";
+import React from "react";
 import BottomNavigator from "../components/bottomNavigator";
+import * as SQLite from "expo-sqlite";
+import { useFocusEffect } from "@react-navigation/native";
 import Header from "../components/header";
 import RecentTransactions from "../components/recentTransactions";
 import StatsComponent from "../components/statsComponent";
@@ -53,26 +56,28 @@ const Home = ({ navigation }) => {
   const logoutModal = useSelector((state) => state.logoutModal.logoutModal);
   // console.log(logoutModal);
 
-  useEffect(() => {
-    const setData = async () => {
-      let storedPin = await AsyncStorage.getItem("userId");
-      if (storedPin !== null) {
-        storedPin = parseInt(storedPin);
-        setUserId(storedPin);
+  useFocusEffect(
+    React.useCallback(() => {
+      const setData = async () => {
+        let storedPin = await AsyncStorage.getItem("userId");
+        if (storedPin !== null) {
+          storedPin = parseInt(storedPin);
+          setUserId(storedPin);
 
-        await transactionLength(db, storedPin)
-          .then((res) => {
-            if (res > 0) {
-              setTransactionPresent(2);
-            } else {
-              setTransactionPresent(1);
-            }
-          })
-          .catch((err) => {});
-      }
-    };
-    setData();
-  }, []);
+          await transactionLength(db, storedPin)
+            .then((res) => {
+              if (res > 0) {
+                setTransactionPresent(2);
+              } else {
+                setTransactionPresent(1);
+              }
+            })
+            .catch((err) => {});
+        }
+      };
+      setData();
+    }, [])
+  );
 
   // useEffect(() => {
   //   async function storeData() {
@@ -129,9 +134,11 @@ const Home = ({ navigation }) => {
       margin: 20,
       marginTop: 90,
       height: "78%",
-      // marginBottom: 60,
+      // marginBottom: 80,
       backgroundColor: "white",
       borderRadius: 20,
+      borderWidth: 1,
+      borderColor: "#d3d6db",
     },
     welcome: {
       flexDirection: "column",

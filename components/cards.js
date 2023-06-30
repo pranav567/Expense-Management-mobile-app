@@ -1,7 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
+import React from "react";
 import { Dimensions } from "react-native";
 import * as SQLite from "expo-sqlite";
+import { useFocusEffect } from "@react-navigation/native";
 
 import {
   Text,
@@ -207,31 +209,33 @@ const Cards = (props) => {
 
   const firestore = getFirestore(app);
 
-  useEffect(() => {
-    const setData = async () => {
-      let storedId = await AsyncStorage.getItem("userId");
-      if (storedId !== null) {
-        storedId = parseInt(storedId);
-        setUserId(storedId);
+  useFocusEffect(
+    React.useCallback(() => {
+      const setData = async () => {
+        let storedId = await AsyncStorage.getItem("userId");
+        if (storedId !== null) {
+          storedId = parseInt(storedId);
+          setUserId(storedId);
 
-        // now set cards;
-        await getCards(db, storedId)
-          .then((result) => {
-            setCardsData(result.cards);
-          })
-          .catch((err) => {
-            Toast.show({
-              type: "error",
-              text1: "Database Error 0",
-              position: "bottom",
-              visibilityTime: 4000,
-              autoHide: true,
+          // now set cards;
+          await getCards(db, storedId)
+            .then((result) => {
+              setCardsData(result.cards);
+            })
+            .catch((err) => {
+              Toast.show({
+                type: "error",
+                text1: "Database Error 0",
+                position: "bottom",
+                visibilityTime: 4000,
+                autoHide: true,
+              });
             });
-          });
-      }
-    };
-    setData();
-  }, []);
+        }
+      };
+      setData();
+    }, [])
+  );
 
   // const paginate = async (num) => {
   //   let newNum = cardPaginationNumber;

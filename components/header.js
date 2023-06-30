@@ -38,14 +38,16 @@ const Header = (props) => {
       top: 0,
       left: 0,
       right: 0,
-      height: 70, // Adjust the height as per your requirement
+      height: 62, // Adjust the height as per your requirement
       borderBottomRightRadius: 30,
       borderBottomLeftRadius: 30,
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "flex-start",
       padding: 15,
-      paddingTop: 28,
+      paddingTop: 20,
+      borderBottomWidth: 1,
+      borderBottomColor: "#d3d6db",
     },
   });
 

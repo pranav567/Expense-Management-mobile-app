@@ -1,76 +1,82 @@
 import { Ionicons } from "@expo/vector-icons";
+import React from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import { useEffect } from "react";
+import * as SQLite from "expo-sqlite";
 import { useState } from "react";
 import { TouchableOpacity } from "react-native";
 import { Text, View, Image, StyleSheet, ScrollView } from "react-native";
 import app from "../firebaseConfig";
 import { getFirestore, doc, onSnapshot } from "firebase/firestore";
 import { useSelector, useDispatch } from "react-redux";
-import { setTransactionModal } from "../store";
+import store, { setTransactionModal } from "../store";
 import { useNavigation } from "@react-navigation/native";
+import { getMonthlyTransactions, getSpendingDetails } from "../queries";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const statsComponent = (props) => {
+  const db = SQLite.openDatabase("ExpenseManagement.db");
   const firestore = getFirestore(app);
   const [receive, setReceive] = useState("");
   const [spent, setSpent] = useState("");
   const [monthlySpent, setMonthlySpent] = useState("");
   const [monthlyReceived, setMonthlyReceived] = useState("");
   const [monthlyHeader, setMonthlyHeader] = useState("false");
+  const [userId, setUserId] = useState(0);
 
-  const getFormattedDate = (dateStr) => {
+  const getFormattedDateMonth = (dateStr) => {
     const dateObj = new Date(dateStr);
 
-    const formattedDate = `${String(
-      dateObj.getDate().padStart(2, "0")
-    )}/${String(dateObj.getMonth() + 1).padStart(
-      2,
-      "0"
-    )}/${dateObj.getFullYear()}`;
-    const formattedTime = `${String(
-      dateObj.getHours().padStart(2, "0")
-    )}:${String(dateObj.getMinutes().padStart(2, "0"))}`;
+    // const formattedDate = `${String(
+    //   dateObj.getDate().padStart(2, "0")
+    // )}/${String(dateObj.getMonth() + 1).padStart(
+    //   2,
+    //   "0"
+    // )}/${dateObj.getFullYear()}`;
+    // const formattedTime = `${String(
+    //   dateObj.getHours().padStart(2, "0")
+    // )}:${String(dateObj.getMinutes().padStart(2, "0"))}`;
 
-    return formattedDate;
+    return String(dateObj.getMonth() + 1).padStart(2, "0");
   };
 
-  useEffect(() => {
-    // console.log(props.docId);
-    const userDocRef = doc(firestore, "users", props.docId);
-    const unsubscribe = onSnapshot(userDocRef, (docSnapshot) => {
-      const userData = docSnapshot.data();
-      if (userData) {
-        let arr = userData.transactions;
+  useFocusEffect(
+    React.useCallback(() => {
+      const setData = async () => {
+        let storedId = await AsyncStorage.getItem("userId");
+        if (storedId !== null) {
+          storedId = parseInt(storedId);
+          setUserId(storedId);
 
-        arr = arr.sort((a, b) => b.date.seconds - a.date.seconds);
-        let exp = 0;
-        let rec = 0;
-        const currentDate = new Date();
-        // const day = String(currentDate.getDate()).padStart(2, "0");
-        const month = String(currentDate.getMonth() + 1).padStart(2, "0");
-        arr.forEach((obj) => {
-          if (getFormattedDate(obj.date) == month) {
-            if (obj.transactionType == "Received")
-              rec += parseFloat(obj.amount);
-            else if (obj.transactionType == "Spent")
-              exp += parseFloat(obj.amount);
-          }
-        });
-        setMonthlyReceived(rec);
-        setMonthlySpent(exp);
-        setReceive(userData.received);
-        setSpent(userData.expenditure);
-        // Handle the change in the 'transaction' field
-        // console.log("Transactions updated:", transactions);
-        // Update the transaction array in your other screen or component
-        // ...
-      }
-    });
+          await getSpendingDetails(db, storedId)
+            .then((res) => {
+              if (res !== null) {
+                // console.log(res);
+                setReceive(res.received);
+                setSpent(res.expenditure);
+              }
+            })
+            .catch((err) => {});
 
-    return () => {
-      // Clean up the listener when the component is unmounted
-      unsubscribe();
-    };
-  }, []);
+          const currDate = new Date();
+          const month = String(currDate.getMonth() + 1).padStart(2, "0");
+          const year = String(currDate.getFullYear());
+          // console.log(year, month);
+
+          await getMonthlyTransactions(db, storedId, month, year)
+            .then((res) => {
+              // console.log(res);
+              setMonthlyReceived(res.income);
+              setMonthlySpent(res.spent);
+              if (res.income > res.spent) setMonthlyHeader(false);
+              else setMonthlyHeader(true);
+            })
+            .catch((err) => {});
+        }
+      };
+      setData();
+    }, [])
+  );
 
   const getMonthName = () => {
     const monthMapping = {
@@ -171,7 +177,7 @@ const statsComponent = (props) => {
             textAlign: "left",
           }}
         >
-          Rs. {monthlyReceived}
+          Rs. {receive}
         </Text>
         <Text
           style={{
@@ -181,7 +187,7 @@ const statsComponent = (props) => {
             textAlign: "right",
           }}
         >
-          Rs. {monthlySpent}
+          Rs. {spent}
         </Text>
       </View>
     </View>

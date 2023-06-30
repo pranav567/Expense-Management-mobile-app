@@ -17,7 +17,8 @@ const BottomNavigator = (props) => {
       flexDirection: "row",
       justifyContent: "space-around",
       alignItems: "center",
-      borderTopColor: "gray",
+      borderTopWidth: 1,
+      borderTopColor: "#d3d6db",
     },
     button: {
       height: "100%",

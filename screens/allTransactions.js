@@ -6,13 +6,17 @@ import {
   Image,
   TouchableOpacity,
 } from "react-native";
+import * as SQLite from "expo-sqlite";
 import BottomNavigator from "../components/bottomNavigator";
 import Header from "../components/header";
 import RecentTransactions from "../components/recentTransactions";
 import { useEffect } from "react";
 import { useState } from "react";
 import app from "../firebaseConfig";
+import { useFocusEffect } from "@react-navigation/native";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import React from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   getFirestore,
   doc,
@@ -24,9 +28,10 @@ import {
 import TransactionModal from "../components/transactionModal";
 import { useSelector, useDispatch } from "react-redux";
 import { setTransactionModal } from "../store";
+import { getTransactions } from "../queries";
 
-const AllTransactions = ({ navigation, route }) => {
-  const { docId } = route.params;
+const AllTransactions = ({ navigation }) => {
+  const db = SQLite.openDatabase("ExpenseManagement.db");
   const firestore = getFirestore(app);
   const [transactions, setTransactions] = useState([]);
   const transactionModal = useSelector(
@@ -34,7 +39,7 @@ const AllTransactions = ({ navigation, route }) => {
   );
 
   const getFormattedDate = (dateObj) => {
-    const transactionDate = dateObj.toDate();
+    const transactionDate = new Date(dateObj);
     const day = String(transactionDate.getDate()).padStart(2, "0");
     const month = String(transactionDate.getMonth() + 1).padStart(2, "0");
     const year = String(transactionDate.getFullYear());
@@ -139,27 +144,23 @@ const AllTransactions = ({ navigation, route }) => {
     return imagePath;
   };
 
-  useEffect(() => {
-    // console.log(props.docId);
-    const userDocRef = doc(firestore, "users", docId);
-    const unsubscribe = onSnapshot(userDocRef, (docSnapshot) => {
-      const userData = docSnapshot.data();
-      if (userData) {
-        let arr = userData.transactions;
-        arr = arr.sort((a, b) => b.date.seconds - a.date.seconds);
-        setTransactions(arr);
-        // Handle the change in the 'transaction' field
-        // console.log("Transactions updated:", transactions);
-        // Update the transaction array in your other screen or component
-        // ...
-      }
-    });
+  useFocusEffect(
+    React.useCallback(() => {
+      const setData = async () => {
+        let storedId = await AsyncStorage.getItem("userId");
+        if (storedId !== null) {
+          storedId = parseInt(storedId);
 
-    return () => {
-      // Clean up the listener when the component is unmounted
-      unsubscribe();
-    };
-  }, []);
+          await getTransactions(db, storedId, 1)
+            .then((res) => {
+              setTransactions(res.transactions);
+            })
+            .catch((err) => {});
+        }
+      };
+      setData();
+    }, [])
+  );
 
   const styles = StyleSheet.create({
     container: {
@@ -168,10 +169,11 @@ const AllTransactions = ({ navigation, route }) => {
     },
     transactionContainer: {
       margin: 20,
+      marginTop: 80,
+      marginBottom: 120,
       padding: 10,
       backgroundColor: "white",
       borderRadius: 20,
-      height: "87%",
     },
     transaction: {
       flexDirection: "row",
@@ -213,7 +215,7 @@ const AllTransactions = ({ navigation, route }) => {
   return (
     <>
       <View style={styles.container}>
-        {/* <Header headerTitle="AllTransactions" /> */}
+        <Header headerTitle="All Transactions" />
         {/* <View style={styles.headerRow}></View> */}
         <View style={styles.transactionContainer}>
           <Text

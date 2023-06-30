@@ -54,8 +54,8 @@ const Login = ({ navigation }) => {
     const checkLoggedIn = async () => {
       const getUserId = await AsyncStorage.getItem("userId");
       if (getUserId !== null && getUserId !== "") {
-        console.log(getUserId);
-        navigation.navigate("Profile");
+        // console.log(getUserId);
+        navigation.navigate("Home");
       }
     };
 

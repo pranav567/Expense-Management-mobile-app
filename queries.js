@@ -258,7 +258,7 @@ export const deleteTransaction = (db, userId, transactionId) => {
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
-        "DELETE FROM transactionDetails WHERE userId=? ANDA transactionId = ?",
+        "DELETE FROM transactionDetails WHERE userId=? AND transactionId = ?",
         [userId, transactionId],
         (_, result) => {
           if (result.rowsAffected > 0) {
@@ -505,7 +505,7 @@ export const getTransactions = async (db, userId, transactionPage) => {
 
           tx.executeSql(
             "SELECT * FROM transactionDetails WHERE userId = ? ORDER BY transactionId DESC LIMIT ? OFFSET ?",
-            [userId, 5, (transactionPage - 1) * 5],
+            [userId, 8, (transactionPage - 1) * 8],
             (_, result) => {
               const transactions = [];
               for (let i = 0; i < result.rows.length; i++) {
@@ -601,21 +601,57 @@ export const transactionLength = async (db, userId) => {
 
 export const getMonthlyTransactions = async (db, userId, month, year) => {
   return new Promise((resolve, reject) => {
+    // console.log(month, year);
     db.transaction((tx) => {
       tx.executeSql(
-        `SELECT * FROM transactionDetails WHERE userId=? AND strftime('%m', date) = ? AND strftime('%Y', date) = ?`,
+        `SELECT * FROM transactionDetails WHERE userId=? AND strftime('%m', date) = ? AND strftime('%Y', date) = ? `,
         [userId, month, year],
         (_, result) => {
           let spent = 0.0;
           let income = 0.0;
           for (let i = 0; i < result.rows.length; i++) {
-            if (result.rows[i].transactionType == "Spent") {
+            if (result.rows.item(i).transactionType == "Spent") {
               spent += result.rows.item(i).amount;
-            } else if (result.rows[i].transactionType == "Received") {
+            } else if (result.rows.item(i).transactionType == "Received") {
               income += result.rows.item(i).amount;
             }
           }
           resolve({ spent, income });
+        },
+        (_, error) => {
+          reject(error);
+        }
+      );
+    });
+  });
+};
+
+// get Transactions
+
+export const getRecentTransactions = async (db, userId) => {
+  return new Promise((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        "SELECT COUNT(*) FROM transactionDetails WHERE userId =?",
+        [userId],
+        (_, result) => {
+          const count = result.rows.item(0)["COUNT(*)"];
+
+          tx.executeSql(
+            "SELECT * FROM transactionDetails WHERE userId = ? ORDER BY transactionId DESC LIMIT 4",
+            [userId],
+            (_, result) => {
+              const transactions = [];
+              for (let i = 0; i < result.rows.length; i++) {
+                const row = result.rows.item(i);
+                transactions.push(row);
+              }
+              resolve({ transactions, count });
+            },
+            (_, error) => {
+              reject(error);
+            }
+          );
         },
         (_, error) => {
           reject(error);

@@ -35,55 +35,6 @@ const Profile = ({ navigation }) => {
   const [userData, setUserData] = useState(null);
   const [docid, setDocid] = useState("");
 
-  // useEffect(() => {
-  //   async function storeData() {
-  //     let uid = "";
-  //     try {
-  //       await new Promise((resolve, reject) => {
-  //         onAuthStateChanged(auth, (user) => {
-  //           if (user) {
-  //             // User is logged in, get user data
-  //             uid = user.uid;
-  //             resolve();
-  //           } else {
-  //             // User is not logged in
-  //             navigation.navigate("Login");
-  //             reject();
-  //           }
-  //         });
-  //       });
-
-  //       const usersCollectionRef = collection(firestore, "users");
-  //       const queryDoc = query(
-  //         usersCollectionRef,
-  //         where("uid", "==", uid),
-  //         limit(1)
-  //       );
-
-  //       const querySnapshot = await getDocs(queryDoc);
-
-  //       if (!querySnapshot.empty) {
-  //         const doc = querySnapshot.docs[0];
-  //         // Handle the matching document
-  //         const dataUser = doc.data();
-  //         setUserData(dataUser);
-  //         setDocid(doc.id);
-  //         // console.log(userData);
-  //       } else {
-  //         // No matching document found
-  //         navigation.navigate("Login");
-  //         // console.log("User document does not exist");
-  //       }
-  //     } catch (error) {
-  //       // Handle error
-  //       // console.log(error);
-  //       navigation.navigate("Login");
-  //     }
-  //   }
-
-  //   storeData();
-  // }, []);
-
   const cardProfileModal = useSelector(
     (state) => state.cardProfileModal.cardProfileModal
   );
@@ -102,9 +53,11 @@ const Profile = ({ navigation }) => {
       justifyContent: "flex-start",
       width: "90%",
       marginTop: 90,
-      marginBottom: 65,
-
+      marginBottom: 80,
+      borderRadius: 20,
       backgroundColor: "white",
+      borderWidth: 1,
+      borderColor: "#d3d6db",
     },
     security: {},
     cards: {},
