@@ -314,15 +314,15 @@ const AddTransaction = ({ navigation }) => {
         });
       }
     } else {
-      console.log(
-        transactionType,
-        fromObj,
-        toObj,
-        description,
-        amountInvolved,
-        unnecessary,
-        recurring
-      );
+      // console.log(
+      //   transactionType,
+      //   fromObj,
+      //   toObj,
+      //   description,
+      //   amountInvolved,
+      //   unnecessary,
+      //   recurring
+      // );
       Toast.show({
         type: "error",
         text1: "Incomplete Form",
