@@ -276,6 +276,30 @@ export const deleteTransaction = (db, userId, transactionId) => {
   });
 };
 
+// delete all transaction
+
+export const deleteAllTransaction = (db, userId) => {
+  return new Promise((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        "DELETE FROM transactionDetails WHERE userId=? ",
+        [userId],
+        (_, result) => {
+          if (result.rowsAffected > 0) {
+            resolve(true);
+          } else {
+            resolve(false);
+          }
+        },
+        (_, error) => {
+          //consolelog("Error deleting transaction", error);
+          reject(error);
+        }
+      );
+    });
+  });
+};
+
 // check for email exists by checking count
 
 export const checkEmailExists = (db, email) => {
@@ -601,11 +625,10 @@ export const transactionLength = async (db, userId) => {
 
 export const getMonthlyTransactions = async (db, userId, month, year) => {
   return new Promise((resolve, reject) => {
-    // console.log(month, year);
     db.transaction((tx) => {
       tx.executeSql(
-        `SELECT * FROM transactionDetails WHERE userId=? AND strftime('%m', date) = ? AND strftime('%Y', date) = ? `,
-        [userId, month, year],
+        `SELECT * FROM transactionDetails WHERE userId=? AND substr(date,1,7) = ? `,
+        [userId, `${year}-${month}`],
         (_, result) => {
           let spent = 0.0;
           let income = 0.0;
@@ -619,6 +642,7 @@ export const getMonthlyTransactions = async (db, userId, month, year) => {
           resolve({ spent, income });
         },
         (_, error) => {
+          console.log(error);
           reject(error);
         }
       );

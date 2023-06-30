@@ -5,8 +5,12 @@ import { getAuth } from "firebase/auth";
 import app from "../firebaseConfig";
 import { setLogoutModal } from "../store";
 import { useSelector, useDispatch } from "react-redux";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SQLite from "expo-sqlite";
+import { deleteAllTransaction, updateTransactionUserDetails } from "../queries";
 
 const Header = (props) => {
+  const db = SQLite.openDatabase("ExpenseManagement.db");
   // const logoutModal = useSelector((state) => state.logoutModal.logoutModal);
   //   console.log(cardProfileModal);
   const dispatch = useDispatch();
@@ -63,7 +67,18 @@ const Header = (props) => {
       >
         {headerTitle}
       </Text>
-      <TouchableOpacity onPress={() => updateLogoutModal()}>
+      <TouchableOpacity
+        onPress={() => {
+          // let storedId = await AsyncStorage.getItem("userId");
+          // if (storedId !== null) {
+          //   storedId = parseInt(storedId);
+          //   await deleteAllTransaction(db, storedId);
+          //   await updateTransactionUserDetails(db, 0, 0, storedId);
+          //   console.log("hellp");
+          // }
+          updateLogoutModal();
+        }}
+      >
         <Ionicons
           style={{ marginTop: 2 }}
           name="power"

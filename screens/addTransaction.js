@@ -8,7 +8,7 @@ import {
   TextInput,
 } from "react-native";
 import * as SQLite from "expo-sqlite";
-
+import moment from "moment";
 import React from "react";
 import { useFocusEffect } from "@react-navigation/native";
 
@@ -160,8 +160,7 @@ const AddTransaction = ({ navigation }) => {
       else data["recurring"] = false;
       data["from"] = fromObj;
       data["to"] = toObj;
-      const currentDate = new Date();
-      const isoDateString = currentDate.toISOString();
+      const isoDateString = moment().format();
       data["date"] = isoDateString;
       data["transactionId"] = transLength + 1;
 

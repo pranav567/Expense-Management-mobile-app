@@ -132,7 +132,7 @@ const Login = ({ navigation }) => {
                   visibilityTime: 4000,
                   autoHide: true,
                 });
-                navigation.navigate("Profile");
+                navigation.navigate("Home");
               } else {
                 Toast.show({
                   type: "error",

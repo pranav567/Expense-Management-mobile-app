@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import * as SQLite from "expo-sqlite";
+import moment from "moment";
 import BottomNavigator from "../components/bottomNavigator";
 import Header from "../components/header";
 import RecentTransactions from "../components/recentTransactions";
@@ -27,13 +28,18 @@ import {
 } from "firebase/firestore";
 import TransactionModal from "../components/transactionModal";
 import { useSelector, useDispatch } from "react-redux";
-import { setTransactionModal } from "../store";
+import store, { setTransactionModal } from "../store";
 import { getTransactions } from "../queries";
+import { Ionicons } from "@expo/vector-icons";
 
 const AllTransactions = ({ navigation }) => {
   const db = SQLite.openDatabase("ExpenseManagement.db");
   const firestore = getFirestore(app);
   const [transactions, setTransactions] = useState([]);
+  const [transLength, setTransLength] = useState(0);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [maxPages, setMaxPages] = useState(1);
+  const [userId, setUserId] = useState(0);
   const transactionModal = useSelector(
     (state) => state.transactionModal.transactionModal
   );
@@ -55,67 +61,16 @@ const AllTransactions = ({ navigation }) => {
   };
 
   const handleDate = (dateObj) => {
-    const currentDate = new Date();
-
-    // Format the date
-    const day = String(currentDate.getDate()).padStart(2, "0");
-    const month = String(currentDate.getMonth() + 1).padStart(2, "0");
-    const year = String(currentDate.getFullYear());
-
-    const formattedDate = `${day}/${month}/${year}`;
+    const formattedDate = moment().format("DD/MM/YYYY");
     const transactionDate = getFormattedDate(dateObj);
     if (formattedDate == transactionDate) return "Today";
     else {
-      let date1 = parseInt(day);
+      let date1 = parseInt(moment().format("DD"));
       let date2 = parseInt(transactionDate.slice(0, 2));
       if (date1 - date2 == 1) return "Yesterday";
       else return transactionDate;
     }
   };
-
-  // useEffect(() => {
-  //   async function storeData() {
-  //     let uid = "";
-  //     try {
-  //       await new Promise((resolve, reject) => {
-  //         onAuthStateChanged(auth, (user) => {
-  //           if (user) {
-  //             uid = user.uid;
-  //             resolve();
-  //           } else {
-  //             navigation.navigate("Login");
-  //             reject();
-  //           }
-  //         });
-  //       });
-
-  //       const usersCollectionRef = collection(firestore, "users");
-  //       const queryDoc = query(
-  //         usersCollectionRef,
-  //         where("uid", "==", uid),
-  //         limit(1)
-  //       );
-
-  //       const querySnapshot = await getDocs(queryDoc);
-
-  //       if (!querySnapshot.empty) {
-  //         const doc = querySnapshot.docs[0];
-  //         // Handle the matching document
-  //         const dataUser = doc.data();
-  //         let arr = dataUser.transactions;
-  //         arr.reverse();
-  //         setTransactions(arr);
-  //         //   setDocId(doc.id);
-  //       } else {
-  //         navigation.navigate("Login");
-  //       }
-  //     } catch (error) {
-  //       navigation.navigate("Login");
-  //     }
-  //   }
-
-  //   storeData();
-  // }, []);
 
   const dispatch = useDispatch();
 
@@ -150,10 +105,16 @@ const AllTransactions = ({ navigation }) => {
         let storedId = await AsyncStorage.getItem("userId");
         if (storedId !== null) {
           storedId = parseInt(storedId);
+          setUserId(storedId);
 
           await getTransactions(db, storedId, 1)
             .then((res) => {
               setTransactions(res.transactions);
+              let count = res.count;
+              count =
+                count % 8 == 0 ? Math.floor(count / 8) : Math.ceil(count / 8);
+              setMaxPages(count);
+              setTransLength(res.count);
             })
             .catch((err) => {});
         }
@@ -161,6 +122,16 @@ const AllTransactions = ({ navigation }) => {
       setData();
     }, [])
   );
+
+  const paginate = async (direction) => {
+    // direction +1 right -1 left
+    setPageNumber(pageNumber + direction);
+    await getTransactions(db, userId, pageNumber)
+      .then((res) => {
+        setTransactions(res.transactions);
+      })
+      .catch((err) => {});
+  };
 
   const styles = StyleSheet.create({
     container: {
@@ -316,6 +287,50 @@ const AllTransactions = ({ navigation }) => {
                     </TouchableOpacity>
                   </View>
                 ))}
+
+                {transLength > 8 && (
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      marginBottom: 10,
+                    }}
+                  >
+                    <TouchableOpacity
+                      disabled={pageNumber == 1}
+                      onPress={() => {
+                        //paginate function
+                        paginate(-1);
+                      }}
+                    >
+                      <Ionicons
+                        name="chevron-back-outline"
+                        size={24}
+                        color={pageNumber == 1 ? "white" : "#393e46"}
+                      />
+                    </TouchableOpacity>
+
+                    <Text
+                      style={{ fontSize: 20, marginLeft: 20, marginRight: 20 }}
+                    >
+                      {pageNumber}
+                    </Text>
+                    <TouchableOpacity
+                      disabled={pageNumber == maxPages}
+                      onPress={() => {
+                        //paginate function
+                        paginate(1);
+                      }}
+                    >
+                      <Ionicons
+                        name="chevron-forward-outline"
+                        size={24}
+                        color={pageNumber == maxPages ? "white" : "#393e46"}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                )}
               </View>
             </ScrollView>
           ) : (

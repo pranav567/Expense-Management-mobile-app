@@ -235,7 +235,7 @@ const Security = () => {
               autoHide: true,
             });
             setCheckPin(1);
-            setPinStored(pinLength);
+            setPinStored(hashValue(pinLength, saltStored));
             setShowOldPassword(false);
             setShowPassword(false);
             setEnterOldPin("");

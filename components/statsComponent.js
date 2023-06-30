@@ -13,6 +13,7 @@ import store, { setTransactionModal } from "../store";
 import { useNavigation } from "@react-navigation/native";
 import { getMonthlyTransactions, getSpendingDetails } from "../queries";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import moment from "moment";
 
 const statsComponent = (props) => {
   const db = SQLite.openDatabase("ExpenseManagement.db");
@@ -23,22 +24,6 @@ const statsComponent = (props) => {
   const [monthlyReceived, setMonthlyReceived] = useState("");
   const [monthlyHeader, setMonthlyHeader] = useState("false");
   const [userId, setUserId] = useState(0);
-
-  const getFormattedDateMonth = (dateStr) => {
-    const dateObj = new Date(dateStr);
-
-    // const formattedDate = `${String(
-    //   dateObj.getDate().padStart(2, "0")
-    // )}/${String(dateObj.getMonth() + 1).padStart(
-    //   2,
-    //   "0"
-    // )}/${dateObj.getFullYear()}`;
-    // const formattedTime = `${String(
-    //   dateObj.getHours().padStart(2, "0")
-    // )}:${String(dateObj.getMinutes().padStart(2, "0"))}`;
-
-    return String(dateObj.getMonth() + 1).padStart(2, "0");
-  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -58,14 +43,11 @@ const statsComponent = (props) => {
             })
             .catch((err) => {});
 
-          const currDate = new Date();
-          const month = String(currDate.getMonth() + 1).padStart(2, "0");
-          const year = String(currDate.getFullYear());
-          // console.log(year, month);
+          const month = moment().format("MM");
+          const year = moment().format("YYYY");
 
           await getMonthlyTransactions(db, storedId, month, year)
             .then((res) => {
-              // console.log(res);
               setMonthlyReceived(res.income);
               setMonthlySpent(res.spent);
               if (res.income > res.spent) setMonthlyHeader(false);
@@ -94,8 +76,7 @@ const statsComponent = (props) => {
       12: "December",
     };
 
-    const currentDate = new Date();
-    return monthMapping[currentDate.getMonth() + 1];
+    return monthMapping[parseInt(moment().format("MM"))];
   };
 
   const styles = StyleSheet.create({
