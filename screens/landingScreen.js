@@ -19,7 +19,6 @@ const LandingScreen = ({ navigation }) => {
   const nextPage = async () => {
     try {
       const db = SQLite.openDatabase("ExpenseManagement.db");
-      // await deleteAllTables(db);
       const pin = await AsyncStorage.getItem("storedPin");
       if (pin == null || !lockApp) {
         let tableExists = false;
