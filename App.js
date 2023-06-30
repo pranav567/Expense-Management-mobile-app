@@ -31,11 +31,11 @@ export default function App() {
             component={LandingScreen}
             options={{ headerShown: false }}
           />
-          <Stack.Screen
+          {/* <Stack.Screen
             name="TestDetails"
             component={TestDetails}
             // options={{ headerShown: false }}
-          />
+          /> */}
           <Stack.Screen
             name="Login"
             component={Login}

@@ -215,7 +215,7 @@ const RecurringTransactions = ({ navigation }) => {
     data["fromBalance"] = fromBalance;
     data["toBalance"] = toBalance;
 
-    console.log(data);
+    // console.log(data);
 
     let transactionAdded = false;
     await insertIntoTransactionDetails(
