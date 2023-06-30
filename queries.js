@@ -684,3 +684,80 @@ export const getRecentTransactions = async (db, userId) => {
     });
   });
 };
+
+//get recent recurring transactions
+
+export const getRecentRecurring = async (db, userId) => {
+  return new Promise((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        "SELECT * FROM transactionDetails WHERE userId = ? AND recurring=1 ORDER BY transactionId DESC LIMIT 4",
+        [userId],
+        (_, result) => {
+          const transactions = [];
+          for (let i = 0; i < result.rows.length; i++) {
+            const row = result.rows.item(i);
+            if (
+              transactions.filter((obj) => {
+                return (
+                  obj.description == result.rows.item(i).description &&
+                  obj.amount == result.rows.item(i).amount &&
+                  obj.transactionType == result.rows.item(i).transactionType
+                );
+              }).length == 0
+            )
+              transactions.push(row);
+          }
+          resolve({ transactions });
+        },
+        (_, error) => {
+          reject(error);
+        }
+      );
+    });
+  });
+};
+
+// get all recurring transcations
+
+export const getRecurringTransactions = async (db, userId, transactionPage) => {
+  return new Promise((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        "SELECT COUNT(*) FROM transactionDetails WHERE userId =? AND recurring=1",
+        [userId],
+        (_, result) => {
+          const count = result.rows.item(0)["COUNT(*)"];
+
+          tx.executeSql(
+            "SELECT * FROM transactionDetails WHERE userId = ? AND recurring=1 ORDER BY transactionId DESC LIMIT ? OFFSET ?",
+            [userId, 8, (transactionPage - 1) * 8],
+            (_, result) => {
+              const transactions = [];
+              for (let i = 0; i < result.rows.length; i++) {
+                const row = result.rows.item(i);
+                if (
+                  transactions.filter((obj) => {
+                    return (
+                      obj.description == result.rows.item(i).description &&
+                      obj.amount == result.rows.item(i).amount &&
+                      obj.transactionType == result.rows.item(i).transactionType
+                    );
+                  }).length == 0
+                )
+                  transactions.push(row);
+              }
+              resolve({ transactions, count });
+            },
+            (_, error) => {
+              reject(error);
+            }
+          );
+        },
+        (_, error) => {
+          reject(error);
+        }
+      );
+    });
+  });
+};

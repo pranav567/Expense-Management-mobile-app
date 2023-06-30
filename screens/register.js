@@ -37,7 +37,6 @@ const Register = ({ navigation }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [validPassword, setValidPassword] = useState(false);
   const [email, setEmail] = useState("");
-  // const [mobile, setMobile] = useState("");
 
   const verifyEmail = () => {
     //to be done later using mailgun

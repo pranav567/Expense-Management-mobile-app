@@ -42,7 +42,7 @@ const Header = (props) => {
       top: 0,
       left: 0,
       right: 0,
-      height: 62, // Adjust the height as per your requirement
+      height: 68, // Adjust the height as per your requirement
       borderBottomRightRadius: 30,
       borderBottomLeftRadius: 30,
       flexDirection: "row",

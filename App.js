@@ -15,6 +15,7 @@ import Profile from "./screens/profile";
 import AddTransaction from "./screens/addTransaction";
 import AllTransactions from "./screens/allTransactions";
 import TestDetails from "./screens/testDetails";
+import RecurringTransactions from "./screens/recurringTransactions";
 
 export default function App() {
   return (
@@ -53,6 +54,11 @@ export default function App() {
           <Stack.Screen
             name="AddTransaction"
             component={AddTransaction}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="RecurringTransactions"
+            component={RecurringTransactions}
             options={{ headerShown: false }}
           />
           <Stack.Screen

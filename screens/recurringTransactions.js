@@ -16,6 +16,7 @@ import { useState } from "react";
 import app from "../firebaseConfig";
 import { useFocusEffect } from "@react-navigation/native";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import Toast from "react-native-toast-message";
 import React from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
@@ -29,17 +30,30 @@ import {
 import TransactionModal from "../components/transactionModal";
 import { useSelector, useDispatch } from "react-redux";
 import store, { setTransactionModal } from "../store";
-import { getTransactions } from "../queries";
+import {
+  getCards,
+  getRecurringTransactions,
+  getSpendingDetails,
+  getTransactions,
+  insertIntoTransactionDetails,
+  transactionLength,
+  updateCardBalance,
+  updateTransactionUserDetails,
+} from "../queries";
 import { Ionicons } from "@expo/vector-icons";
 
-const AllTransactions = ({ navigation }) => {
+const RecurringTransactions = ({ navigation }) => {
   const db = SQLite.openDatabase("ExpenseManagement.db");
   const firestore = getFirestore(app);
   const [transactions, setTransactions] = useState([]);
   const [transLength, setTransLength] = useState(0);
+  const [allTransLength, setAllTransLength] = useState(0);
   const [pageNumber, setPageNumber] = useState(1);
   const [maxPages, setMaxPages] = useState(1);
   const [userId, setUserId] = useState(0);
+  const [receive, setReceive] = useState("");
+  const [spent, setSpent] = useState("");
+  const [cardsList, setCardsList] = useState([]);
   const transactionModal = useSelector(
     (state) => state.transactionModal.transactionModal
   );
@@ -107,7 +121,22 @@ const AllTransactions = ({ navigation }) => {
           storedId = parseInt(storedId);
           setUserId(storedId);
 
-          await getTransactions(db, storedId, 1)
+          await getCards(db, storedId)
+            .then((result) => {
+              setCardsList(result.cards);
+            })
+            .catch((err) => {});
+
+          await getSpendingDetails(db, storedId)
+            .then((res) => {
+              if (res !== null) {
+                setSpent(res.expenditure);
+                setReceive(res.received);
+              }
+            })
+            .catch((err) => {});
+
+          await getRecurringTransactions(db, storedId, 1)
             .then((res) => {
               setTransactions(res.transactions);
               let count = res.count;
@@ -115,6 +144,13 @@ const AllTransactions = ({ navigation }) => {
                 count % 8 == 0 ? Math.floor(count / 8) : Math.ceil(count / 8);
               setMaxPages(count);
               setTransLength(res.count);
+            })
+            .catch((err) => {});
+
+          await transactionLength(db, storedId)
+            .then((res) => {
+              setAllTransLength(res);
+              tmpLength = true;
             })
             .catch((err) => {});
         }
@@ -126,11 +162,158 @@ const AllTransactions = ({ navigation }) => {
   const paginate = async (direction) => {
     // direction +1 right -1 left
     setPageNumber(pageNumber + direction);
-    await getTransactions(db, userId, pageNumber)
+    await getRecurringTransactions(db, userId, pageNumber)
       .then((res) => {
         setTransactions(res.transactions);
       })
       .catch((err) => {});
+  };
+
+  const handleAddingRecurringTransaction = async (obj) => {
+    let data = {};
+    data["transactionType"] = obj.transactionType;
+    data["amount"] = obj.amount;
+    data["description"] = obj.description;
+    data["unnecessary"] = obj.unnecessary;
+    data["recurring"] = obj.recurring;
+    data["from"] = obj.from;
+    data["to"] = obj.to;
+    const isoDateString = moment().format();
+    data["date"] = isoDateString;
+    data["transactionId"] = allTransLength + 1;
+
+    let newSpent = spent;
+    let newReceive = receive;
+    let fromBalance =
+      obj.from == "-1" || obj.from == "-2"
+        ? null
+        : cardsList.filter((obj1) => {
+            return obj1.cardNum == parseInt(obj.from) && obj1.userId == userId;
+          })[0].balance;
+    let toBalance =
+      obj.to == "-1" || obj.to == "-2"
+        ? null
+        : cardsList.filter((obj1) => {
+            return obj1.cardNum == parseInt(obj.to) && obj1.userId == userId;
+          })[0].balance;
+    if (obj.transactionType == "Internal Transfer") {
+      if (fromBalance !== null) fromBalance -= obj.amount;
+      if (toBalance !== null) toBalance += obj.amount;
+    } else if (obj.transactionType == "Spent") {
+      newSpent += obj.amount;
+      if (fromBalance !== null) fromBalance -= obj.amount;
+      if (toBalance !== null) toBalance += obj.amount;
+    } else if (obj.transactionType == "Received") {
+      newReceive += obj.amount;
+      if (fromBalance !== null) fromBalance -= obj.amount;
+      if (toBalance !== null) toBalance += obj.amount;
+    }
+
+    data["spent"] = newSpent;
+    data["receive"] = newReceive;
+
+    data["fromBalance"] = fromBalance;
+    data["toBalance"] = toBalance;
+
+    console.log(data);
+
+    let transactionAdded = false;
+    await insertIntoTransactionDetails(
+      db,
+      userId,
+      data.transactionId,
+      data.amount,
+      data.date,
+      data.description,
+      data.from,
+      data.to,
+      data.unnecessary,
+      data.recurring,
+      data.transactionType
+    )
+      .then((res) => {
+        if (res == true) transactionAdded = true;
+      })
+      .catch((err) => {});
+    // add details to cards
+    if (transactionAdded) {
+      let cardsUpdated = true;
+      if (parseInt(obj.from) > 0) {
+        await updateCardBalance(
+          db,
+          userId,
+          parseInt(obj.from),
+          data.fromBalance
+        )
+          .then((res) => {
+            if (!res) cardsUpdated = false;
+          })
+          .catch((err) => {
+            cardsUpdated = false;
+          });
+      }
+      if (parseInt(obj.to) > 0) {
+        await updateCardBalance(db, userId, parseInt(obj.to), data.toBalance)
+          .then((res) => {
+            if (!res) cardsUpdated = false;
+          })
+          .catch((err) => {
+            cardsUpdated = false;
+          });
+      }
+      if (cardsUpdated) {
+        // add details to user details
+        await updateTransactionUserDetails(db, data.spent, data.receive, userId)
+          .then((res) => {
+            if (res) {
+              setReceive("");
+              setSpent("");
+
+              Toast.show({
+                type: "success",
+                text1: "Transaction added",
+                position: "bottom",
+                visibilityTime: 4000,
+                autoHide: true,
+              });
+              navigation.navigate("Home");
+            } else {
+              Toast.show({
+                type: "error",
+                text1: "Database Error 5",
+                position: "bottom",
+                visibilityTime: 4000,
+                autoHide: true,
+              });
+            }
+          })
+          .catch((err) => {
+            Toast.show({
+              type: "error",
+              text1: "Database Error 4",
+              position: "bottom",
+              visibilityTime: 4000,
+              autoHide: true,
+            });
+          });
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Database Error 3",
+          position: "bottom",
+          visibilityTime: 4000,
+          autoHide: true,
+        });
+      }
+    } else {
+      Toast.show({
+        type: "error",
+        text1: "Database Error 2",
+        position: "bottom",
+        visibilityTime: 4000,
+        autoHide: true,
+      });
+    }
   };
 
   const styles = StyleSheet.create({
@@ -166,7 +349,7 @@ const AllTransactions = ({ navigation }) => {
     content: {
       flexDirection: "row",
       justifyContent: "space-between",
-      width: "82%",
+      width: "70%",
     },
     content1: {
       flexDirection: "column",
@@ -188,19 +371,19 @@ const AllTransactions = ({ navigation }) => {
   return (
     <>
       <View style={styles.container}>
-        <Header headerTitle="All Transactions" />
+        <Header headerTitle="Recurring Transactions" />
         {/* <View style={styles.headerRow}></View> */}
         <View style={styles.transactionContainer}>
           <Text
             style={{
-              fontWeight: "bold",
               fontSize: 22,
               color: "#393e46",
               // backgroundColor: "yellow",
               margin: 10,
+              fontWeight: "bold",
             }}
           >
-            Transaction History
+            Recurring Transactions
           </Text>
           {transactions.length > 0 ? (
             <ScrollView showsVerticalScrollIndicator={false}>
@@ -287,6 +470,27 @@ const AllTransactions = ({ navigation }) => {
                           </Text>
                         </View>
                       </View>
+                      <View
+                        style={{
+                          width: "12%",
+                          flexDirection: "row",
+                          //   backgroundColor: "red",
+                          justifyContent: "flex-end",
+                          alignItems: "center",
+                        }}
+                      >
+                        <TouchableOpacity
+                          onPress={() => {
+                            handleAddingRecurringTransaction(obj);
+                          }}
+                        >
+                          <Ionicons
+                            name="add-circle-outline"
+                            size={35}
+                            color="#393e46"
+                          />
+                        </TouchableOpacity>
+                      </View>
                     </TouchableOpacity>
                   </View>
                 ))}
@@ -347,4 +551,4 @@ const AllTransactions = ({ navigation }) => {
   );
 };
 
-export default AllTransactions;
+export default RecurringTransactions;

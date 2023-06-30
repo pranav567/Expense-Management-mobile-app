@@ -31,6 +31,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { transactionLength } from "../queries";
+import RecentRecurring from "../components/recentRecurring";
 
 const appDescription = [
   "The app's designed to help you track your expenses, income, and internal transfers easily.",
@@ -78,49 +79,6 @@ const Home = ({ navigation }) => {
       setData();
     }, [])
   );
-
-  // useEffect(() => {
-  //   async function storeData() {
-  //     let uid = "";
-  //     try {
-  //       await new Promise((resolve, reject) => {
-  //         onAuthStateChanged(auth, (user) => {
-  //           if (user) {
-  //             uid = user.uid;
-  //             resolve();
-  //           } else {
-  //             navigation.navigate("Login");
-  //             reject();
-  //           }
-  //         });
-  //       });
-
-  //       const usersCollectionRef = collection(firestore, "users");
-  //       const queryDoc = query(
-  //         usersCollectionRef,
-  //         where("uid", "==", uid),
-  //         limit(1)
-  //       );
-
-  //       const querySnapshot = await getDocs(queryDoc);
-
-  //       if (!querySnapshot.empty) {
-  //         const doc = querySnapshot.docs[0];
-  //         // Handle the matching document
-  //         const dataUser = doc.data();
-  //         if (dataUser.transactions.length > 0) setTransactionPresent(2);
-  //         else setTransactionPresent(1);
-  //         setDocId(doc.id);
-  //       } else {
-  //         navigation.navigate("Login");
-  //       }
-  //     } catch (error) {
-  //       navigation.navigate("Login");
-  //     }
-  //   }
-
-  //   storeData();
-  // }, []);
 
   const styles = StyleSheet.create({
     container: {
@@ -171,6 +129,17 @@ const Home = ({ navigation }) => {
                 }}
               ></View>
               {userId !== 0 ? <RecentTransactions /> : <></>}
+              <View
+                style={{
+                  borderTopWidth: 1,
+                  marginLeft: 20,
+                  marginRight: 20,
+                  marginTop: 15,
+                  borderTopColor: "#d4d4d6",
+                  // width: "60%",
+                }}
+              ></View>
+              {userId !== 0 ? <RecentRecurring /> : <></>}
             </View>
           </ScrollView>
         ) : transactionPresent == 1 ? (

@@ -9,30 +9,16 @@ import { getFirestore, doc, onSnapshot } from "firebase/firestore";
 import { useSelector, useDispatch } from "react-redux";
 import store, { setTransactionModal } from "../store";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import { getRecentTransactions } from "../queries";
+import { getRecentRecurring, getRecentTransactions } from "../queries";
 import React from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
 
-const RecentTransactions = (props) => {
+const RecentRecurring = () => {
   const db = SQLite.openDatabase("ExpenseManagement.db");
   const navigation = useNavigation();
-  // console.log(props);
-  const firestore = getFirestore(app);
+
   const [transactions, setTransactions] = useState([]);
-  const dispatch = useDispatch();
-
-  const updateTransactionModal = (obj) => {
-    let newObj = {
-      amount: obj.amount,
-      description: obj.description,
-      date: handleDate(obj.date),
-      transactionType: obj.transactionType,
-    };
-    // console.log(newObj);
-    dispatch(setTransactionModal(newObj));
-  };
-
   useFocusEffect(
     React.useCallback(() => {
       const setData = async () => {
@@ -40,7 +26,7 @@ const RecentTransactions = (props) => {
         if (storedId !== null) {
           storedId = parseInt(storedId);
 
-          await getRecentTransactions(db, storedId)
+          await getRecentRecurring(db, storedId)
             .then((res) => {
               setTransactions(res.transactions);
             })
@@ -94,8 +80,6 @@ const RecentTransactions = (props) => {
     return imagePath;
   };
 
-  // console.log(getFormattedDate(transactions[0].date));
-
   const styles = StyleSheet.create({
     container: {
       // margin: 5,
@@ -103,6 +87,7 @@ const RecentTransactions = (props) => {
       padding: 10,
       paddingLeft: 5,
       paddingRight: 5,
+      marginBottom: 20,
     },
     headerRow: {
       padding: 5,
@@ -114,6 +99,9 @@ const RecentTransactions = (props) => {
     transactionContainer: {
       padding: 10,
       paddingBottom: 0,
+      flexDirection: "row",
+      justifyContent: "flex-start",
+      marginTop: 10,
       // width: "100%",
     },
     transaction: {
@@ -158,11 +146,11 @@ const RecentTransactions = (props) => {
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <Text style={{ fontSize: 22, color: "#393e46", fontWeight: "bold" }}>
-          Transaction History
+          Recurring Transactions
         </Text>
         <TouchableOpacity
           onPress={() => {
-            navigation.navigate("All Transactions");
+            navigation.navigate("RecurringTransactions");
           }}
         >
           <Text style={{ marginTop: 8 }}>show all</Text>
@@ -170,99 +158,90 @@ const RecentTransactions = (props) => {
       </View>
       <View style={styles.transactionContainer}>
         {transactions.length > 0 ? (
-          <ScrollView showsVerticalScrollIndicator={false}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {transactions.map((obj, id) => (
-              <View key={id}>
-                <TouchableOpacity
-                  onPress={() => {
-                    updateTransactionModal(obj);
+              <View
+                key={id}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+                  borderWidth: 1,
+                  padding: 10,
+                  marginLeft: 15,
+                  borderRadius: 10,
+                  borderColor: "#393e46",
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: "column",
+                    justifyContent: "center",
                   }}
-                  style={styles.transaction}
                 >
-                  <Image
-                    source={handleImagePath(obj.description)}
-                    style={styles.image}
-                  />
-                  <View style={styles.content}>
-                    <View style={styles.content1}>
-                      <Text
-                        style={{
-                          textAlign: "left",
-                          paddingTop: 5,
-                          fontSize: 15,
-                          fontWeight: "bold",
-                          color: "#393e46",
-                        }}
-                      >
-                        {obj.description}
-                      </Text>
-
-                      <Text
-                        style={{
-                          textAlign: "left",
-                          marginTop: 5,
-                          color: "#393e46",
-                          textTransform: "capitalize",
-                        }}
-                      >
-                        {handleDate(obj.date)}
-                      </Text>
-                    </View>
-
-                    <View style={styles.content2}>
-                      <Text
-                        style={{
-                          textAlign: "right",
-                          paddingRight: 5,
-                          marginTop: 5,
-                          color: "#393e46",
-                        }}
-                      >
-                        {obj.transactionType == "Received" ? (
-                          <Text
-                            style={{
-                              fontSize: 18,
-                              color: "#2dea8f",
-                              fontWeight: "bold",
-                            }}
-                          >
-                            + {obj.amount}
-                          </Text>
-                        ) : obj.transactionType == "Spent" ? (
-                          <Text
-                            style={{
-                              fontSize: 18,
-                              color: "#f85f73",
-                              fontWeight: "bold",
-                            }}
-                          >
-                            - {obj.amount}
-                          </Text>
-                        ) : (
-                          <Text
-                            style={{
-                              fontSize: 18,
-                              color: "#51adcf",
-                              fontWeight: "bold",
-                            }}
-                          >
-                            {obj.amount}
-                          </Text>
-                        )}
-                      </Text>
-                    </View>
-                  </View>
-                </TouchableOpacity>
+                  <Text
+                    style={{
+                      fontSize: 15,
+                      fontWeight: "bold",
+                      color: "#393e46",
+                    }}
+                  >
+                    {obj.description}
+                  </Text>
+                  <Text
+                    style={{
+                      marginTop: 5,
+                      fontSize: 15,
+                      color:
+                        obj.transactionType == "Spent"
+                          ? "#f85f73"
+                          : obj.transactionType == "Received"
+                          ? "#2dea8f"
+                          : "#51adcf",
+                    }}
+                  >
+                    {obj.transactionType == "Spent"
+                      ? "- "
+                      : obj.transactionType == "Received"
+                      ? "+ "
+                      : ""}
+                    Rs. {obj.amount}
+                  </Text>
+                </View>
+                <View
+                  style={{
+                    justifyContent: "center",
+                    alignItems: "center",
+                    marginLeft: 20,
+                  }}
+                >
+                  <TouchableOpacity
+                    onPress={() => {
+                      navigation.navigate("RecurringTransactions");
+                    }}
+                  >
+                    <Ionicons
+                      name="add-circle-outline"
+                      size={28}
+                      color={
+                        obj.transactionType == "Spent"
+                          ? "#f85f73"
+                          : obj.transactionType == "Received"
+                          ? "#2dea8f"
+                          : "#51adcf"
+                      }
+                    />
+                  </TouchableOpacity>
+                </View>
               </View>
             ))}
           </ScrollView>
         ) : (
           <></>
         )}
-        <ScrollView showsVerticalScrollIndicator={false}></ScrollView>
       </View>
     </View>
   );
 };
 
-export default RecentTransactions;
+export default RecentRecurring;
