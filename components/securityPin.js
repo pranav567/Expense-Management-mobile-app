@@ -108,28 +108,7 @@ const SecurityPin = () => {
         (forgotPin && verifyQuest && verifyAns)
       ) {
         dispatch(setSecurityCode(false));
-        // onAuthStateChanged(auth, (user) => {
-        //   if (user) {
-        //     navigation.navigate("Home");
-        //   } else {
-        //     navigation.navigate("Login");
-        //   }
-        // });
-        const userIdStored = await AsyncStorage.getItem("userId");
-        if (userIdStored !== null) {
-          const db = SQLite.openDatabase("ExpenseManagement.db");
-          let tableExists = false;
-          await checkTableExists(db, "userDetails")
-            .then((res) => {
-              tableExists = res;
-            })
-            .catch((err) => {});
-
-          if (tableExists) navigation.navigate("Login");
-          else navigation.navigate("Register");
-        } else {
-          navigation.navigate("Home");
-        }
+        navigation.navigate("Login");
       } else {
         setField1("");
         setField2("");
