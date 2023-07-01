@@ -9,15 +9,9 @@ import {
 } from "react-native";
 import * as SQLite from "expo-sqlite";
 import { Ionicons } from "@expo/vector-icons";
-import app from "../firebaseConfig";
 import Toast from "react-native-toast-message";
 import CryptoJS from "crypto-js";
 import { StackActions } from "@react-navigation/native";
-import {
-  getAuth,
-  signInWithEmailAndPassword,
-  onAuthStateChanged,
-} from "firebase/auth";
 import { useSelector, useDispatch } from "react-redux";
 import SecurityPin from "../components/securityPin";
 
@@ -185,53 +179,6 @@ const Login = ({ navigation }) => {
       });
     }
   };
-
-  // useEffect(() => {
-  //   try {
-  //     const login = async () => {
-  //       const auth = getAuth(app);
-  //       // const { user } = await signInWithEmailAndPassword(
-  //       //   auth,
-  //       //   "pranavpn7@gmail.com",
-  //       //   "Panda@123"
-  //       // );
-  //       // // User successfully logged in, you can now proceed with further actions
-  //       // // console.log("User logged in:", user);
-  //       // navigation.navigate("Home");
-  //       onAuthStateChanged(auth, (user) => {
-  //         if (user) {
-  //           navigation.navigate("Home");
-  //         }
-  //       });
-  //     };
-
-  //     login();
-  //   } catch (error) {}
-  // }, []);
-
-  // const handleLogin = async () => {
-  //   try {
-  //     const auth = getAuth(app);
-  //     const { user } = await signInWithEmailAndPassword(
-  //       auth,
-  //       username,
-  //       password
-  //     );
-  //     // User successfully logged in, you can now proceed with further actions
-  //     // console.log("User logged in:", user);
-  //     navigation.navigate("Home");
-  //   } catch (error) {
-  //     Toast.show({
-  //       type: "error",
-  //       text1: "Sign-In Error",
-  //       text2: "Invalid Credentials!",
-  //       position: "bottom",
-  //       visibilityTime: 2000,
-  //       autoHide: true,
-  //     });
-  //     // console.log("Login error:", error.message);
-  //   }
-  // };
 
   const styles = StyleSheet.create({
     containerOuter: {

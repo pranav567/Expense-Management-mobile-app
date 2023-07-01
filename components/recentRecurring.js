@@ -3,9 +3,7 @@ import { useEffect } from "react";
 import { useState } from "react";
 import { TouchableOpacity } from "react-native";
 import { Text, View, Image, StyleSheet, ScrollView } from "react-native";
-import app from "../firebaseConfig";
 import * as SQLite from "expo-sqlite";
-import { getFirestore, doc, onSnapshot } from "firebase/firestore";
 import { useSelector, useDispatch } from "react-redux";
 import store, { setTransactionModal } from "../store";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
@@ -36,34 +34,6 @@ const RecentRecurring = () => {
       setData();
     }, [])
   );
-
-  const getFormattedDate = (dateObj) => {
-    const transactionDate = new Date(dateObj);
-    const day = String(transactionDate.getDate()).padStart(2, "0");
-    const month = String(transactionDate.getMonth() + 1).padStart(2, "0");
-    const year = String(transactionDate.getFullYear());
-
-    const formattedDate = `${day}/${month}/${year}`;
-    return formattedDate;
-    // Get current time
-    // const hours = String(transactionDate.getHours() % 12 || 12).padStart(2, "0");
-    // const minutes = String(transactionDate.getMinutes()).padStart(2, "0");
-    // const meridiem = transactionDate.getHours() >= 12 ? "PM" : "AM";
-
-    // const formattedTime = `${hours}:${minutes} ${meridiem}`;
-  };
-
-  const handleDate = (dateObj) => {
-    const formattedDate = moment().format("DD/MM/YYYY");
-    const transactionDate = getFormattedDate(dateObj);
-    if (formattedDate == transactionDate) return "Today";
-    else {
-      let date1 = parseInt(moment().format("DD"));
-      let date2 = parseInt(transactionDate.slice(0, 2));
-      if (date1 - date2 == 1) return "Yesterday";
-      else return transactionDate;
-    }
-  };
 
   const handleImagePath = (type) => {
     let imagePath = "";

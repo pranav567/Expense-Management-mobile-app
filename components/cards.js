@@ -16,8 +16,6 @@ import {
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import Toast from "react-native-toast-message";
-import app from "../firebaseConfig";
-import { getFirestore, doc, updateDoc } from "firebase/firestore";
 
 import { useSelector, useDispatch } from "react-redux";
 import { setCardProfileModal } from "../store";
@@ -187,7 +185,6 @@ const Cards = (props) => {
   const [balance, setBalance] = useState("");
   const [cardId, setCardId] = useState("");
 
-  const firestore = getFirestore(app);
 
   useFocusEffect(
     React.useCallback(() => {

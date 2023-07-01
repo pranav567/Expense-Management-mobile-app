@@ -9,8 +9,6 @@ import {
 import * as SQLite from "expo-sqlite";
 import Toast from "react-native-toast-message";
 import { useNavigation, StackActions } from "@react-navigation/native";
-import { getAuth } from "firebase/auth";
-import app from "../firebaseConfig";
 // import ExpoBlurView from "expo-blur";
 
 import { Ionicons } from "@expo/vector-icons";
@@ -49,7 +47,6 @@ const styles = StyleSheet.create({
 const LogoutModal = () => {
   const navigation = useNavigation();
 
-  const auth = getAuth(app);
   const logoutModal = useSelector((state) => state.logoutModal.logoutModal);
   //   console.log(cardProfileModal);
   const dispatch = useDispatch();
@@ -57,21 +54,6 @@ const LogoutModal = () => {
   const updateLogoutModal = () => {
     dispatch(setLogoutModal(false));
   };
-
-  // const handleLogout = async () => {
-  //   try {
-  //     await auth.signOut();
-  //     dispatch(setLogoutModal(false));
-  //     navigation.replace("Login");
-  //     // User has been logged out successfully
-  //     // You can perform any necessary actions here
-  //   } catch (error) {
-  //     dispatch(setLogoutModal(false));
-
-  //     // An error occurred while logging out
-  //     // console.log(error);
-  //   }
-  // };
 
   const handleLogout = async () => {
     try {
@@ -93,24 +75,8 @@ const LogoutModal = () => {
   };
 
   return (
-    <View
-      style={styles.container}
-      //   onPress={() => {
-      //     updateCardProfileModal();
-      //   }}
-    >
-      {/* <ImageBackground source={require("../assets/blur.png")}> */}
+    <View style={styles.container}>
       <View style={styles.cardContainer}>
-        {/* <View style={styles.header}>
-          <Text
-            style={{
-              color: "#393e46",
-              fontSize: 20,
-            }}
-          >
-            Logout
-          </Text>
-        </View> */}
         <View style={styles.body1}>
           <Text
             style={{

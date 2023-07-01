@@ -6,8 +6,6 @@ import * as SQLite from "expo-sqlite";
 import { useState } from "react";
 import { TouchableOpacity } from "react-native";
 import { Text, View, Image, StyleSheet, ScrollView } from "react-native";
-import app from "../firebaseConfig";
-import { getFirestore, doc, onSnapshot } from "firebase/firestore";
 import { useSelector, useDispatch } from "react-redux";
 import store, { setTransactionModal } from "../store";
 import { useNavigation } from "@react-navigation/native";
@@ -17,7 +15,6 @@ import moment from "moment";
 
 const statsComponent = (props) => {
   const db = SQLite.openDatabase("ExpenseManagement.db");
-  const firestore = getFirestore(app);
   const [receive, setReceive] = useState("");
   const [spent, setSpent] = useState("");
   const [monthlySpent, setMonthlySpent] = useState("");

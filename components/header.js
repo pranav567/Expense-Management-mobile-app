@@ -1,8 +1,6 @@
 import { StyleSheet, View, TouchableOpacity, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { getAuth } from "firebase/auth";
-import app from "../firebaseConfig";
 import { setLogoutModal } from "../store";
 import { useSelector, useDispatch } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -19,21 +17,7 @@ const Header = (props) => {
     dispatch(setLogoutModal(true));
   };
   const navigation = useNavigation();
-  const { headerTitle } = props; //values: home, add, profile
-
-  const auth = getAuth(app);
-  const handleLogout = () => {
-    // try {
-    //   await auth.signOut();
-    //   navigation.replace("Login");
-    //   // User has been logged out successfully
-    //   // You can perform any necessary actions here
-    // } catch (error) {
-    //   // An error occurred while logging out
-    //   // console.log(error);
-    // }
-    // updateLogoutModal();
-  };
+  const { headerTitle } = props;
 
   const styles = StyleSheet.create({
     container: {

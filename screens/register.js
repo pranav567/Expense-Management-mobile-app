@@ -11,12 +11,9 @@ import {
   ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import app from "../firebaseConfig";
 import CryptoJS from "crypto-js";
 
 import { StackActions } from "@react-navigation/native";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import { getFirestore, collection, addDoc } from "firebase/firestore";
 import Toast from "react-native-toast-message";
 import {
   checkTableExists,
@@ -30,7 +27,6 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Register = ({ navigation }) => {
-  // console.log(firebase);
   const [name, setName] = useState("Panda");
   const [password, setPassword] = useState("123");
   const [showPassword, setShowPassword] = useState(false);

@@ -3,9 +3,7 @@ import { useEffect } from "react";
 import { useState } from "react";
 import { TouchableOpacity } from "react-native";
 import { Text, View, Image, StyleSheet, ScrollView } from "react-native";
-import app from "../firebaseConfig";
 import * as SQLite from "expo-sqlite";
-import { getFirestore, doc, onSnapshot } from "firebase/firestore";
 import { useSelector, useDispatch } from "react-redux";
 import store, { setTransactionModal } from "../store";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
@@ -18,7 +16,6 @@ const RecentTransactions = (props) => {
   const db = SQLite.openDatabase("ExpenseManagement.db");
   const navigation = useNavigation();
   // console.log(props);
-  const firestore = getFirestore(app);
   const [transactions, setTransactions] = useState([]);
   const dispatch = useDispatch();
 

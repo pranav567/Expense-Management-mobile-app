@@ -15,16 +15,6 @@ import RecentTransactions from "../components/recentTransactions";
 import StatsComponent from "../components/statsComponent";
 import { useEffect } from "react";
 import { useState } from "react";
-import app from "../firebaseConfig";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import {
-  getFirestore,
-  collection,
-  query,
-  where,
-  limit,
-  getDocs,
-} from "firebase/firestore";
 import TransactionModal from "../components/transactionModal";
 import LogoutModal from "../components/logoutModal";
 import { useSelector, useDispatch } from "react-redux";
@@ -46,9 +36,6 @@ const appDescription = [
 
 const Home = ({ navigation }) => {
   const db = SQLite.openDatabase("ExpenseManagement.db");
-  const auth = getAuth(app);
-  const firestore = getFirestore(app);
-  const [docId, setDocId] = useState("");
   const [transactionPresent, setTransactionPresent] = useState(0);
   const [recurrTransactionPresent, setRecurrTransactionPresent] = useState(0);
   const [userId, setUserId] = useState(0);

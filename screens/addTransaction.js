@@ -21,20 +21,6 @@ import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect } from "react";
 
-import app from "../firebaseConfig";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import {
-  getFirestore,
-  collection,
-  query,
-  where,
-  limit,
-  getDocs,
-  doc,
-  updateDoc,
-  setDoc,
-} from "firebase/firestore";
-
 import { suggestions } from "../suggestions";
 import LogoutModal from "../components/logoutModal";
 import { useSelector, useDispatch } from "react-redux";
@@ -52,8 +38,6 @@ import {
 
 const AddTransaction = ({ navigation }) => {
   const db = SQLite.openDatabase("ExpenseManagement.db");
-  const auth = getAuth(app);
-  const firestore = getFirestore(app);
 
   const [cardsList, setCardsList] = useState([]);
   const [transactionType, setTransactionType] = useState(null);

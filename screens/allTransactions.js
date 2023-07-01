@@ -13,19 +13,9 @@ import Header from "../components/header";
 import RecentTransactions from "../components/recentTransactions";
 import { useEffect } from "react";
 import { useState } from "react";
-import app from "../firebaseConfig";
 import { useFocusEffect } from "@react-navigation/native";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
 import React from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {
-  getFirestore,
-  doc,
-  onSnapshot,
-  query,
-  limit,
-  collection,
-} from "firebase/firestore";
 import TransactionModal from "../components/transactionModal";
 import { useSelector, useDispatch } from "react-redux";
 import store, { setTransactionModal } from "../store";
@@ -35,7 +25,6 @@ import LogoutModal from "../components/logoutModal";
 
 const AllTransactions = ({ navigation }) => {
   const db = SQLite.openDatabase("ExpenseManagement.db");
-  const firestore = getFirestore(app);
   const [transactions, setTransactions] = useState([]);
   const [transLength, setTransLength] = useState(0);
   const [pageNumber, setPageNumber] = useState(1);

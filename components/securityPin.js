@@ -12,8 +12,6 @@ import * as SQLite from "expo-sqlite";
 import { Picker } from "@react-native-picker/picker";
 import Toast from "react-native-toast-message";
 import { useNavigation } from "@react-navigation/native";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import app from "../firebaseConfig";
 // import ExpoBlurView from "expo-blur";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -50,8 +48,6 @@ const SecurityPin = () => {
   const inputRef4 = useRef(null);
 
   const navigation = useNavigation();
-
-  const auth = getAuth(app);
 
   const [field1, setField1] = useState("");
   const [field2, setField2] = useState("");

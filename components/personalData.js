@@ -1,18 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Text, View, StyleSheet } from "react-native";
-import app from "../firebaseConfig";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
 import * as SQLite from "expo-sqlite";
-import {
-  getFirestore,
-  doc,
-  collection,
-  query,
-  where,
-  limit,
-  getDocs,
-} from "firebase/firestore";
 import { useEffect } from "react";
 import { getUserDetailsById } from "../queries";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -39,9 +28,6 @@ const PersonalData = () => {
     };
     setData();
   }, []);
-
-  const auth = getAuth(app);
-  const firestore = getFirestore(app);
 
   const styles = StyleSheet.create({
     personal: {
