@@ -30,7 +30,7 @@ import LogoutModal from "../components/logoutModal";
 import { useSelector, useDispatch } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { transactionLength } from "../queries";
+import { getRecurringLength, transactionLength } from "../queries";
 import RecentRecurring from "../components/recentRecurring";
 
 const appDescription = [
@@ -50,6 +50,7 @@ const Home = ({ navigation }) => {
   const firestore = getFirestore(app);
   const [docId, setDocId] = useState("");
   const [transactionPresent, setTransactionPresent] = useState(0);
+  const [recurrTransactionPresent, setRecurrTransactionPresent] = useState(0);
   const [userId, setUserId] = useState(0);
   const transactionModal = useSelector(
     (state) => state.transactionModal.transactionModal
@@ -60,18 +61,24 @@ const Home = ({ navigation }) => {
   useFocusEffect(
     React.useCallback(() => {
       const setData = async () => {
-        let storedPin = await AsyncStorage.getItem("userId");
-        if (storedPin !== null) {
-          storedPin = parseInt(storedPin);
-          setUserId(storedPin);
+        let storedId = await AsyncStorage.getItem("userId");
+        if (storedId !== null) {
+          storedId = parseInt(storedId);
+          setUserId(storedId);
 
-          await transactionLength(db, storedPin)
+          await transactionLength(db, storedId)
             .then((res) => {
               if (res > 0) {
                 setTransactionPresent(2);
               } else {
                 setTransactionPresent(1);
               }
+            })
+            .catch((err) => {});
+
+          await getRecurringLength(db, storedId)
+            .then((res) => {
+              setRecurrTransactionPresent(res);
             })
             .catch((err) => {});
         }
@@ -139,7 +146,11 @@ const Home = ({ navigation }) => {
                   // width: "60%",
                 }}
               ></View>
-              {userId !== 0 ? <RecentRecurring /> : <></>}
+              {userId !== 0 && recurrTransactionPresent > 0 ? (
+                <RecentRecurring />
+              ) : (
+                <></>
+              )}
             </View>
           </ScrollView>
         ) : transactionPresent == 1 ? (

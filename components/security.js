@@ -157,7 +157,7 @@ const Security = () => {
             text1: "New Security Pin Set!",
             // text2: "Enter 4 digit security pin!",
             position: "bottom",
-            visibilityTime: 4000,
+            visibilityTime: 2000,
             autoHide: true,
           });
           setCheckPin(1);
@@ -179,7 +179,7 @@ const Security = () => {
           text1: "Incomplete form!",
           text2: "Enter security question and answer!",
           position: "bottom",
-          visibilityTime: 4000,
+          visibilityTime: 2000,
           autoHide: true,
         });
       }
@@ -189,7 +189,7 @@ const Security = () => {
         text1: "Incorrect Pin Length!",
         text2: "Enter 4 digit security pin!",
         position: "bottom",
-        visibilityTime: 4000,
+        visibilityTime: 2000,
         autoHide: true,
       });
     }
@@ -227,7 +227,7 @@ const Security = () => {
               text1: "New Security Pin Set!",
               // text2: "Enter 4 digit security pin!",
               position: "bottom",
-              visibilityTime: 4000,
+              visibilityTime: 2000,
               autoHide: true,
             });
             setCheckPin(1);
@@ -250,7 +250,7 @@ const Security = () => {
             text1: "Both Pin matched!",
             text2: "New Pin should be different from Old Pin!",
             position: "bottom",
-            visibilityTime: 4000,
+            visibilityTime: 2000,
             autoHide: true,
           });
         }
@@ -261,7 +261,7 @@ const Security = () => {
             text1: "Incorrect Security Details!",
             text2: "Select your question and answer!",
             position: "bottom",
-            visibilityTime: 4000,
+            visibilityTime: 2000,
             autoHide: true,
           });
         } else {
@@ -269,7 +269,7 @@ const Security = () => {
             type: "error",
             text1: "Incorrect Old Pin!",
             position: "bottom",
-            visibilityTime: 4000,
+            visibilityTime: 2000,
             autoHide: true,
           });
         }
@@ -281,7 +281,7 @@ const Security = () => {
           text1: "Incomplete fields!",
           text2: "Enter 4 digit new pin and complete security question",
           position: "bottom",
-          visibilityTime: 4000,
+          visibilityTime: 2000,
           autoHide: true,
         });
       } else {
@@ -290,7 +290,7 @@ const Security = () => {
           text1: "Incorrect Pin Length!",
           text2: "Enter 4 digit security pin!",
           position: "bottom",
-          visibilityTime: 4000,
+          visibilityTime: 2000,
           autoHide: true,
         });
       }

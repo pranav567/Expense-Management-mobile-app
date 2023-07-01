@@ -35,8 +35,8 @@ const Login = ({ navigation }) => {
   const securityCode = useSelector((state) => state.securityCode.securityCode);
   const dispatch = useDispatch();
 
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("pranavpn7@gmail.com");
+  const [password, setPassword] = useState("123");
   const [showPassword, setShowPassword] = useState(false);
   const [validPassword, setValidPassword] = useState(false);
 
@@ -80,7 +80,7 @@ const Login = ({ navigation }) => {
           type: "error",
           text1: "Database Error 1",
           position: "bottom",
-          visibilityTime: 4000,
+          visibilityTime: 2000,
           autoHide: true,
         });
       } else {
@@ -89,7 +89,7 @@ const Login = ({ navigation }) => {
             type: "error",
             text1: "No account found!",
             position: "bottom",
-            visibilityTime: 4000,
+            visibilityTime: 2000,
             autoHide: true,
           });
         } else {
@@ -130,7 +130,7 @@ const Login = ({ navigation }) => {
                   type: "success",
                   text1: "Login successful!",
                   position: "bottom",
-                  visibilityTime: 4000,
+                  visibilityTime: 2000,
                   autoHide: true,
                 });
                 navigation.dispatch(StackActions.popToTop());
@@ -141,7 +141,7 @@ const Login = ({ navigation }) => {
                   text1: "Sign-In Error",
                   text2: "Invalid Credentials!",
                   position: "bottom",
-                  visibilityTime: 4000,
+                  visibilityTime: 2000,
                   autoHide: true,
                 });
               }
@@ -150,7 +150,7 @@ const Login = ({ navigation }) => {
                 type: "error",
                 text1: "Database error 1",
                 position: "bottom",
-                visibilityTime: 4000,
+                visibilityTime: 2000,
                 autoHide: true,
               });
             }
@@ -160,7 +160,7 @@ const Login = ({ navigation }) => {
               text1: "Email does not exist!",
               text2: "Register to use the app!",
               position: "bottom",
-              visibilityTime: 4000,
+              visibilityTime: 2000,
               autoHide: true,
             });
           } else {
@@ -168,7 +168,7 @@ const Login = ({ navigation }) => {
               type: "error",
               text1: "Database Error 2",
               position: "bottom",
-              visibilityTime: 4000,
+              visibilityTime: 2000,
               autoHide: true,
             });
           }
@@ -180,7 +180,7 @@ const Login = ({ navigation }) => {
         text1: "Login Error",
         text2: "Fill up details!",
         position: "bottom",
-        visibilityTime: 4000,
+        visibilityTime: 2000,
         autoHide: true,
       });
     }
@@ -226,7 +226,7 @@ const Login = ({ navigation }) => {
   //       text1: "Sign-In Error",
   //       text2: "Invalid Credentials!",
   //       position: "bottom",
-  //       visibilityTime: 4000,
+  //       visibilityTime: 2000,
   //       autoHide: true,
   //     });
   //     // console.log("Login error:", error.message);

@@ -129,7 +129,7 @@ const SecurityPin = () => {
           text1: "Incorrect Question-Answer / Pin!",
           text2: "Try again!",
           position: "bottom",
-          visibilityTime: 4000,
+          visibilityTime: 2000,
           autoHide: true,
         });
       }
@@ -139,7 +139,7 @@ const SecurityPin = () => {
         text1: "Storage issue!",
         text2: "Try again later!",
         position: "bottom",
-        visibilityTime: 4000,
+        visibilityTime: 2000,
         autoHide: true,
       });
     }

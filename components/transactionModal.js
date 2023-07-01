@@ -4,6 +4,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSelector, useDispatch } from "react-redux";
 import { setTransactionModal } from "../store";
 import moment from "moment";
+import { useFocusEffect } from "@react-navigation/native";
+import React, { useState } from "react";
+import * as SQLite from "expo-sqlite";
+import { getCardId } from "../queries";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const styles = StyleSheet.create({
   container: {
@@ -32,14 +37,19 @@ const styles = StyleSheet.create({
   balance: {
     flexDirection: "row",
   },
-  cardId: { flexDirection: "row", justifyContent: "center", marginTop: 20 },
+  cardId: {
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    marginTop: 20,
+  },
 });
 
 const TransactionModal = () => {
+  const [fromId, setFromId] = useState("");
+  const [toId, setToId] = useState("");
   const transactionModal = useSelector(
     (state) => state.transactionModal.transactionModal
   );
-  //   console.log(cardProfileModal);
   const dispatch = useDispatch();
 
   const updateTransactionModal = () => {
@@ -60,6 +70,29 @@ const TransactionModal = () => {
 
     return imagePath;
   };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const setData = async () => {
+        const db = SQLite.openDatabase("ExpenseManagement.db");
+        let storedId = await AsyncStorage.getItem("userId");
+        if (storedId !== null) {
+          await getCardId(
+            db,
+            storedId,
+            parseInt(transactionModal.from),
+            parseInt(transactionModal.to)
+          )
+            .then((res) => {
+              setFromId(res.fromUnique);
+              setToId(res.toUnique);
+            })
+            .catch((err) => {});
+        }
+      };
+      setData();
+    }, [])
+  );
 
   return (
     <TouchableOpacity
@@ -142,18 +175,91 @@ const TransactionModal = () => {
             </View>
           </View>
         </View>
+        {parseInt(transactionModal.from) > -2 &&
+          transactionModal.transactionType !== "Received" && (
+            <View style={styles.cardId}>
+              <Text
+                style={{
+                  color: "#393e46",
+                  width: "30%",
+                  marginRight: 10,
+                  fontWeight: "bold",
+                  fontSize: 15,
+                  textAlign: "left",
+                  // marginLeft: 0,
+                  // backgroundColor: "red",
+                }}
+              >
+                Debited
+              </Text>
+              <Text
+                style={{
+                  color: "#393e46",
+                  fontSize: 15,
+                  textAlign: "left",
+                  width: "70%",
+                  // backgroundColor: "red",
+                }}
+              >
+                {parseInt(transactionModal.from) > 0
+                  ? `Card: ${fromId}`
+                  : "Cash"}
+              </Text>
+            </View>
+          )}
+        {parseInt(transactionModal.to) > -2 && (
+          <View style={styles.cardId}>
+            <Text
+              style={{
+                color: "#393e46",
+                width: "30%",
+                marginRight: 10,
+                fontWeight: "bold",
+                fontSize: 15,
+                textAlign: "left",
+                // marginLeft: 0,
+                // backgroundColor: "red",
+              }}
+            >
+              Credited
+            </Text>
+            <Text
+              style={{
+                color: "#393e46",
+                fontSize: 15,
+                textAlign: "left",
+                width: "70%",
+                // backgroundColor: "red",
+              }}
+            >
+              {parseInt(transactionModal.to) > 0 ? `Card: ${toId}` : "Cash"}
+            </Text>
+          </View>
+        )}
         <View style={styles.cardId}>
           <Text
             style={{
               color: "#393e46",
-              width: "45%",
+              width: "30%",
+              marginRight: 10,
               fontWeight: "bold",
-              fontSize: 17,
+              fontSize: 15,
+              textAlign: "left",
+              // marginLeft: 0,
+              // backgroundColor: "red",
             }}
           >
             Description
           </Text>
-          <Text style={{ color: "#393e46", fontSize: 17 }}>
+          <Text
+            style={{
+              color: "#393e46",
+              fontSize: 15,
+              textAlign: "left",
+              width: "70%",
+              // backgroundColor: "red",
+            }}
+          >
             {transactionModal.description}
           </Text>
         </View>

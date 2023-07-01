@@ -82,6 +82,8 @@ const AllTransactions = ({ navigation }) => {
       description: obj.description,
       date: handleDate(obj.date),
       transactionType: obj.transactionType,
+      from: obj.from,
+      to: obj.to,
     };
     // console.log(newObj);
     dispatch(setTransactionModal(newObj));

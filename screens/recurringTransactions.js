@@ -97,6 +97,8 @@ const RecurringTransactions = ({ navigation }) => {
       description: obj.description,
       date: handleDate(obj.date),
       transactionType: obj.transactionType,
+      from: obj.from,
+      to: obj.to,
     };
     // console.log(newObj);
     dispatch(setTransactionModal(newObj));
@@ -276,7 +278,7 @@ const RecurringTransactions = ({ navigation }) => {
                 type: "success",
                 text1: "Transaction added",
                 position: "bottom",
-                visibilityTime: 4000,
+                visibilityTime: 2000,
                 autoHide: true,
               });
               navigation.navigate("Home");
@@ -285,7 +287,7 @@ const RecurringTransactions = ({ navigation }) => {
                 type: "error",
                 text1: "Database Error 5",
                 position: "bottom",
-                visibilityTime: 4000,
+                visibilityTime: 2000,
                 autoHide: true,
               });
             }
@@ -295,7 +297,7 @@ const RecurringTransactions = ({ navigation }) => {
               type: "error",
               text1: "Database Error 4",
               position: "bottom",
-              visibilityTime: 4000,
+              visibilityTime: 2000,
               autoHide: true,
             });
           });
@@ -304,7 +306,7 @@ const RecurringTransactions = ({ navigation }) => {
           type: "error",
           text1: "Database Error 3",
           position: "bottom",
-          visibilityTime: 4000,
+          visibilityTime: 2000,
           autoHide: true,
         });
       }
@@ -313,7 +315,7 @@ const RecurringTransactions = ({ navigation }) => {
         type: "error",
         text1: "Database Error 2",
         position: "bottom",
-        visibilityTime: 4000,
+        visibilityTime: 2000,
         autoHide: true,
       });
     }

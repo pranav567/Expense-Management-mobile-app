@@ -31,13 +31,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Register = ({ navigation }) => {
   // console.log(firebase);
-  const [name, setName] = useState("");
-  const [password, setPassword] = useState("");
+  const [name, setName] = useState("Panda");
+  const [password, setPassword] = useState("123");
   const [showPassword, setShowPassword] = useState(false);
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("123");
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [validPassword, setValidPassword] = useState(false);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState("pranavpn7@gmail.com");
 
   const verifyEmail = () => {
     //to be done later using mailgun
@@ -82,7 +82,7 @@ const Register = ({ navigation }) => {
           type: "error",
           text1: "Database Error 1",
           position: "bottom",
-          visibilityTime: 4000,
+          visibilityTime: 2000,
           autoHide: true,
         });
       } else {
@@ -97,7 +97,7 @@ const Register = ({ navigation }) => {
             type: "error",
             text1: "Database Error 2",
             position: "bottom",
-            visibilityTime: 4000,
+            visibilityTime: 2000,
             autoHide: true,
           });
         } else {
@@ -134,7 +134,7 @@ const Register = ({ navigation }) => {
                 type: "error",
                 text1: "Database Error 3",
                 position: "bottom",
-                visibilityTime: 4000,
+                visibilityTime: 2000,
                 autoHide: true,
               });
             } else {
@@ -145,7 +145,7 @@ const Register = ({ navigation }) => {
                 type: "success",
                 text1: "Registration Successful",
                 position: "bottom",
-                visibilityTime: 4000,
+                visibilityTime: 2000,
                 autoHide: true,
               });
               navigation.dispatch(StackActions.popToTop());
@@ -157,7 +157,7 @@ const Register = ({ navigation }) => {
               text1: "Email Exists",
               text2: "Account already exists! Try login!",
               position: "bottom",
-              visibilityTime: 4000,
+              visibilityTime: 2000,
               autoHide: true,
             });
           } else {
@@ -165,7 +165,7 @@ const Register = ({ navigation }) => {
               type: "error",
               text1: "Database Error 4",
               position: "bottom",
-              visibilityTime: 4000,
+              visibilityTime: 2000,
               autoHide: true,
             });
           }
@@ -177,7 +177,7 @@ const Register = ({ navigation }) => {
         text1: "Sign-Up Error",
         text2: "Fill up details first and match both passwords!",
         position: "bottom",
-        visibilityTime: 4000,
+        visibilityTime: 2000,
         autoHide: true,
       });
     }

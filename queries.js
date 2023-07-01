@@ -702,7 +702,9 @@ export const getRecentRecurring = async (db, userId) => {
                 return (
                   obj.description == result.rows.item(i).description &&
                   obj.amount == result.rows.item(i).amount &&
-                  obj.transactionType == result.rows.item(i).transactionType
+                  obj.transactionType == result.rows.item(i).transactionType &&
+                  obj.from == result.rows.item(i).from &&
+                  obj.to == result.rows.item(i).to
                 );
               }).length == 0
             )
@@ -741,13 +743,67 @@ export const getRecurringTransactions = async (db, userId, transactionPage) => {
                     return (
                       obj.description == result.rows.item(i).description &&
                       obj.amount == result.rows.item(i).amount &&
-                      obj.transactionType == result.rows.item(i).transactionType
+                      obj.transactionType ==
+                        result.rows.item(i).transactionType &&
+                      obj.from == result.rows.item(i).from &&
+                      obj.to == result.rows.item(i).to
                     );
                   }).length == 0
                 )
                   transactions.push(row);
               }
               resolve({ transactions, count });
+            },
+            (_, error) => {
+              reject(error);
+            }
+          );
+        },
+        (_, error) => {
+          reject(error);
+        }
+      );
+    });
+  });
+};
+
+// get recurring length
+
+export const getRecurringLength = async (db, userId) => {
+  return new Promise((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        "SELECT COUNT(*) FROM transactionDetails WHERE userId =? AND recurring=1",
+        [userId],
+        (_, result) => {
+          const count = result.rows.item(0)["COUNT(*)"];
+
+          resolve(count);
+        },
+        (_, error) => {
+          reject(error);
+        }
+      );
+    });
+  });
+};
+
+//  get ids for cards
+
+export const getCardId = async (db, userId, fromId, toId) => {
+  return new Promise((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        "SELECT uniqueId from cardDetails where userId=? AND cardNum =?",
+        [userId, fromId],
+        (_, result) => {
+          let fromUnique = result.rows.item(0).uniqueId;
+          tx.executeSql(
+            "SELECT uniqueId from cardDetails where userId=? AND cardNum =?",
+            [userId, toId],
+            (_, result) => {
+              let toUnique = result.rows.item(0).uniqueId;
+              resolve({ fromUnique, toUnique });
             },
             (_, error) => {
               reject(error);

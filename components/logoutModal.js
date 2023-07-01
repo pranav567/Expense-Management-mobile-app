@@ -75,7 +75,7 @@ const LogoutModal = () => {
 
   const handleLogout = async () => {
     try {
-      await AsyncStorage.setItem("userId", "");
+      await AsyncStorage.removeItem("userId");
       navigation.dispatch(StackActions.popToTop());
       navigation.navigate("Login");
       dispatch(setLogoutModal(false));
@@ -86,7 +86,7 @@ const LogoutModal = () => {
         text1: "Something went wrong!",
         text2: "Try again later!",
         position: "bottom",
-        visibilityTime: 4000,
+        visibilityTime: 2000,
         autoHide: true,
       });
     }

@@ -115,7 +115,7 @@ const AddTransaction = ({ navigation }) => {
               type: "error",
               text1: "Database Error 0",
               position: "bottom",
-              visibilityTime: 4000,
+              visibilityTime: 2000,
               autoHide: true,
             });
           }
@@ -167,7 +167,7 @@ const AddTransaction = ({ navigation }) => {
       let newSpent = spent;
       let newReceive = receive;
       let fromBalance =
-        fromObj == "-1"
+        fromObj == "-1" || fromObj == "-2"
           ? null
           : cardsList.filter((obj) => {
               return obj.cardNum == parseInt(fromObj) && obj.userId == userId;
@@ -271,7 +271,7 @@ const AddTransaction = ({ navigation }) => {
                   type: "success",
                   text1: "Transaction added",
                   position: "bottom",
-                  visibilityTime: 4000,
+                  visibilityTime: 2000,
                   autoHide: true,
                 });
                 navigation.navigate("Home");
@@ -280,7 +280,7 @@ const AddTransaction = ({ navigation }) => {
                   type: "error",
                   text1: "Database Error 5",
                   position: "bottom",
-                  visibilityTime: 4000,
+                  visibilityTime: 2000,
                   autoHide: true,
                 });
               }
@@ -290,7 +290,7 @@ const AddTransaction = ({ navigation }) => {
                 type: "error",
                 text1: "Database Error 4",
                 position: "bottom",
-                visibilityTime: 4000,
+                visibilityTime: 2000,
                 autoHide: true,
               });
             });
@@ -299,7 +299,7 @@ const AddTransaction = ({ navigation }) => {
             type: "error",
             text1: "Database Error 3",
             position: "bottom",
-            visibilityTime: 4000,
+            visibilityTime: 2000,
             autoHide: true,
           });
         }
@@ -308,7 +308,7 @@ const AddTransaction = ({ navigation }) => {
           type: "error",
           text1: "Database Error 2",
           position: "bottom",
-          visibilityTime: 4000,
+          visibilityTime: 2000,
           autoHide: true,
         });
       }
@@ -327,7 +327,7 @@ const AddTransaction = ({ navigation }) => {
         text1: "Incomplete Form",
         text2: "Fill all required Fields",
         position: "bottom",
-        visibilityTime: 4000,
+        visibilityTime: 2000,
         autoHide: true,
       });
     }
@@ -672,8 +672,6 @@ const AddTransaction = ({ navigation }) => {
                     ))}
                 </Picker>
               </View>
-
-              
             </>
           ) : transactionType == "Internal Transfer" ? (
             <>

@@ -207,7 +207,7 @@ const Cards = (props) => {
                 type: "error",
                 text1: "Database Error 0",
                 position: "bottom",
-                visibilityTime: 4000,
+                visibilityTime: 2000,
                 autoHide: true,
               });
             });
@@ -272,7 +272,7 @@ const Cards = (props) => {
                 type: "success",
                 text1: "Card Added",
                 position: "bottom",
-                visibilityTime: 4000,
+                visibilityTime: 2000,
                 autoHide: true,
               });
             } else {
@@ -280,7 +280,7 @@ const Cards = (props) => {
                 type: "error",
                 text1: "Database Error2",
                 position: "bottom",
-                visibilityTime: 4000,
+                visibilityTime: 2000,
                 autoHide: true,
               });
             }
@@ -289,7 +289,7 @@ const Cards = (props) => {
               type: "error",
               text1: "Database Error3",
               position: "bottom",
-              visibilityTime: 4000,
+              visibilityTime: 2000,
               autoHide: true,
             });
           }
@@ -298,7 +298,7 @@ const Cards = (props) => {
             type: "error",
             text1: "Database Error4",
             position: "bottom",
-            visibilityTime: 4000,
+            visibilityTime: 2000,
             autoHide: true,
           });
         }
@@ -308,7 +308,7 @@ const Cards = (props) => {
           text1: "Duplicate Details",
           text2: "Card already present!",
           position: "bottom",
-          visibilityTime: 4000,
+          visibilityTime: 2000,
           autoHide: true,
         });
       } else {
@@ -316,7 +316,7 @@ const Cards = (props) => {
           type: "error",
           text1: "Database Error5",
           position: "bottom",
-          visibilityTime: 4000,
+          visibilityTime: 2000,
           autoHide: true,
         });
       }
@@ -326,7 +326,7 @@ const Cards = (props) => {
         text1: "Incomplete Details",
         text2: "Fill all the required Fields",
         position: "bottom",
-        visibilityTime: 4000,
+        visibilityTime: 2000,
         autoHide: true,
       });
     }
@@ -354,7 +354,7 @@ const Cards = (props) => {
   //           type: "success",
   //           text1: "Card Deleted",
   //           position: "bottom",
-  //           visibilityTime: 4000,
+  //           visibilityTime: 2000,
   //           autoHide: true,
   //         });
   //       })
@@ -363,7 +363,7 @@ const Cards = (props) => {
   //           type: "error",
   //           text1: "Database Error6",
   //           position: "bottom",
-  //           visibilityTime: 4000,
+  //           visibilityTime: 2000,
   //           autoHide: true,
   //         });
   //       });
@@ -372,7 +372,7 @@ const Cards = (props) => {
   //       type: "error",
   //       text1: "Database Error7",
   //       position: "bottom",
-  //       visibilityTime: 4000,
+  //       visibilityTime: 2000,
   //       autoHide: true,
   //     });
   //   }
