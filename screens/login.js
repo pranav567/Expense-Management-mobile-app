@@ -12,7 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import app from "../firebaseConfig";
 import Toast from "react-native-toast-message";
 import CryptoJS from "crypto-js";
-
+import { StackActions } from "@react-navigation/native";
 import {
   getAuth,
   signInWithEmailAndPassword,
@@ -55,6 +55,7 @@ const Login = ({ navigation }) => {
       const getUserId = await AsyncStorage.getItem("userId");
       if (getUserId !== null && getUserId !== "") {
         // console.log(getUserId);
+        navigation.dispatch(StackActions.popToTop());
         navigation.navigate("Home");
       }
     };
@@ -132,6 +133,7 @@ const Login = ({ navigation }) => {
                   visibilityTime: 4000,
                   autoHide: true,
                 });
+                navigation.dispatch(StackActions.popToTop());
                 navigation.navigate("Home");
               } else {
                 Toast.show({

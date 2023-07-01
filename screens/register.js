@@ -14,6 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import app from "../firebaseConfig";
 import CryptoJS from "crypto-js";
 
+import { StackActions } from "@react-navigation/native";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { getFirestore, collection, addDoc } from "firebase/firestore";
 import Toast from "react-native-toast-message";
@@ -147,9 +148,8 @@ const Register = ({ navigation }) => {
                 visibilityTime: 4000,
                 autoHide: true,
               });
-              setTimeout(() => {
-                navigation.navigate("Home");
-              }, 500);
+              navigation.dispatch(StackActions.popToTop());
+              navigation.navigate("Home");
             }
           } else if (emailExists == true) {
             Toast.show({

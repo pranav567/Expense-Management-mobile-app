@@ -30,6 +30,7 @@ import {
 import TransactionModal from "../components/transactionModal";
 import { useSelector, useDispatch } from "react-redux";
 import store, { setTransactionModal } from "../store";
+import LogoutModal from "../components/logoutModal";
 import {
   getCards,
   getRecurringTransactions,
@@ -57,6 +58,8 @@ const RecurringTransactions = ({ navigation }) => {
   const transactionModal = useSelector(
     (state) => state.transactionModal.transactionModal
   );
+
+  const logoutModal = useSelector((state) => state.logoutModal.logoutModal);
 
   const getFormattedDate = (dateObj) => {
     const transactionDate = new Date(dateObj);
@@ -546,6 +549,7 @@ const RecurringTransactions = ({ navigation }) => {
         </View>
         <BottomNavigator buttonActive="none" />
         {transactionModal !== null ? <TransactionModal /> : <></>}
+        {logoutModal ? <LogoutModal /> : <></>}
       </View>
     </>
   );

@@ -13,14 +13,15 @@ import { checkTableExists, deleteAllTables } from "../queries";
 
 const LandingScreen = ({ navigation }) => {
   const securityCode = useSelector((state) => state.securityCode.securityCode);
-  const lockApp = useSelector((state) => state.lockApp.lockApp);
   const dispatch = useDispatch();
 
   const nextPage = async () => {
     try {
       const db = SQLite.openDatabase("ExpenseManagement.db");
+      // await deleteAllTables(db);
       const pin = await AsyncStorage.getItem("storedPin");
-      if (pin == null || !lockApp) {
+      const lockApp = await AsyncStorage.getItem("lockApp");
+      if (pin == null || lockApp == null || lockApp == "0") {
         let tableExists = false;
         await checkTableExists(db, "userDetails")
           .then((res) => {

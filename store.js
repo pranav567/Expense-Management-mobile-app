@@ -69,26 +69,11 @@ const SecurityCodeSlice = createSlice({
   },
 });
 
-const initialLockAppState = {
-  lockApp: false,
-};
-
-const LockAppSlice = createSlice({
-  name: "lockApp",
-  initialState: initialLockAppState,
-  reducers: {
-    setLockApp: (state, action) => {
-      state.lockApp = action.payload;
-    },
-  },
-});
-
 const rootReducer = combineReducers({
   cardProfileModal: CardProfileModalSlice.reducer,
   transactionModal: TransactionModalSlice.reducer,
   logoutModal: LogoutModalSlice.reducer,
   securityCode: SecurityCodeSlice.reducer,
-  lockApp: LockAppSlice.reducer,
 });
 
 // Create the Redux store
@@ -100,5 +85,4 @@ export const { setCardProfileModal } = CardProfileModalSlice.actions;
 export const { setTransactionModal } = TransactionModalSlice.actions;
 export const { setLogoutModal } = LogoutModalSlice.actions;
 export const { setSecurityCode } = SecurityCodeSlice.actions;
-export const { setLockApp } = LockAppSlice.actions;
 export default store;

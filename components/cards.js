@@ -163,26 +163,6 @@ const CardComponent = (props) => {
               </Text> */}
             </Text>
           </Text>
-          {/* <Text style={{ fontSize: 15 }}>
-            Id :{" "}
-            {!showId
-              ? "****"
-              : uniqueId.length > 4
-              ? `**${uniqueId.slice(uniqueId.length - 3)}`
-              : uniqueId}{" "}
-          </Text>
-          <TouchableOpacity
-            onPress={() => {
-              setShowId(!showId);
-            }}
-          >
-            <Ionicons
-              size={18}
-              name={showId ? "eye-off-outline" : "eye-outline"}
-              color="#3d3931"
-              style={{ marginLeft: 20 }}
-            />
-          </TouchableOpacity> */}
         </View>
 
         <Text style={{ fontSize: 13, marginTop: 3 }}>
@@ -236,44 +216,6 @@ const Cards = (props) => {
       setData();
     }, [])
   );
-
-  // const paginate = async (num) => {
-  //   let newNum = cardPaginationNumber;
-  //   if (num == 1) {
-  //     if (
-  //       cardsLen % 5 == 0 &&
-  //       cardPaginationNumber < Math.floor(cardsLen / 5)
-  //     ) {
-  //       setCardPaginationNumber(cardPaginationNumber + 1);
-  //       newNum = newNum + 1;
-  //     } else if (
-  //       cardsLen % 5 !== 0 &&
-  //       cardPaginationNumber < Math.ceil(cardsLen / 5)
-  //     ) {
-  //       setCardPaginationNumber(cardPaginationNumber + 1);
-  //       newNum = newNum + 1;
-  //     }
-  //   } else if (num == -1 && cardPaginationNumber > 1) {
-  //     setCardPaginationNumber(cardPaginationNumber - 1);
-  //     newNum = newNum - 1;
-  //   }
-
-  //   if (newNum !== cardPaginationNumber) {
-  //     await getCards(db, userId, newNum)
-  //       .then((result) => {
-  //         setCardsData(result.cards);
-  //       })
-  //       .catch((err) => {
-  //         Toast.show({
-  //           type: "error",
-  //           text1: "Database Error1",
-  //           position: "bottom",
-  //           visibilityTime: 4000,
-  //           autoHide: true,
-  //         });
-  //       });
-  //   }
-  // };
 
   const handleNewCard = async () => {
     // console.log(selectedTypeofCard, cardName, balance, cardId);
@@ -396,45 +338,45 @@ const Cards = (props) => {
     setBalance(numericValue);
   };
 
-  const handleCardRemoval = async (obj) => {
-    let deletedCard = null;
-    await deleteCard(db, userId, obj.cardNum)
-      .then((result) => {
-        deletedCard = result;
-      })
-      .catch((err) => {});
-    if (deletedCard == true) {
-      await getCards(db, userId)
-        .then((result) => {
-          setCardsData(result.cards);
-          // setCardPaginationNumber(1);
-          Toast.show({
-            type: "success",
-            text1: "Card Deleted",
-            position: "bottom",
-            visibilityTime: 4000,
-            autoHide: true,
-          });
-        })
-        .catch((err) => {
-          Toast.show({
-            type: "error",
-            text1: "Database Error6",
-            position: "bottom",
-            visibilityTime: 4000,
-            autoHide: true,
-          });
-        });
-    } else {
-      Toast.show({
-        type: "error",
-        text1: "Database Error7",
-        position: "bottom",
-        visibilityTime: 4000,
-        autoHide: true,
-      });
-    }
-  };
+  // const handleCardRemoval = async (obj) => {
+  //   let deletedCard = null;
+  //   await deleteCard(db, userId, obj.cardNum)
+  //     .then((result) => {
+  //       deletedCard = result;
+  //     })
+  //     .catch((err) => {});
+  //   if (deletedCard == true) {
+  //     await getCards(db, userId)
+  //       .then((result) => {
+  //         setCardsData(result.cards);
+  //         // setCardPaginationNumber(1);
+  //         Toast.show({
+  //           type: "success",
+  //           text1: "Card Deleted",
+  //           position: "bottom",
+  //           visibilityTime: 4000,
+  //           autoHide: true,
+  //         });
+  //       })
+  //       .catch((err) => {
+  //         Toast.show({
+  //           type: "error",
+  //           text1: "Database Error6",
+  //           position: "bottom",
+  //           visibilityTime: 4000,
+  //           autoHide: true,
+  //         });
+  //       });
+  //   } else {
+  //     Toast.show({
+  //       type: "error",
+  //       text1: "Database Error7",
+  //       position: "bottom",
+  //       visibilityTime: 4000,
+  //       autoHide: true,
+  //     });
+  //   }
+  // };
 
   const styles = StyleSheet.create({
     cards: {
@@ -734,7 +676,7 @@ const Cards = (props) => {
                   uniqueId={obj.uniqueId}
                   balance={obj.balance}
                 />
-                {windowWidth < 405 ? (
+                {/* {windowWidth < 405 ? (
                   <TouchableOpacity
                     style={{ marginTop: 20, marginRight: 35 }}
                     onPress={() => {
@@ -760,7 +702,7 @@ const Cards = (props) => {
                       size={24}
                     />
                   </TouchableOpacity>
-                )}
+                )} */}
               </View>
               {id >= 0 && id < cardsData.length - 1 ? (
                 <View

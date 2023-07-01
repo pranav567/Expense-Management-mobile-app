@@ -116,8 +116,6 @@ const Profile = ({ navigation }) => {
 };
 
 export default Profile;
-
-// import { Text, View, TouchableOpacity } from "react-native";
 // import { useEffect, useState } from "react";
 
 // import app from "../firebaseConfig";

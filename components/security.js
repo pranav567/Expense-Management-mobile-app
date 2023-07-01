@@ -12,7 +12,6 @@ import {
 import Toast from "react-native-toast-message";
 import { Picker } from "@react-native-picker/picker";
 import { useSelector, useDispatch } from "react-redux";
-import { setLockApp } from "../store";
 import CryptoJS from "crypto-js";
 // import {  } from "react-native-web";
 
@@ -46,7 +45,7 @@ const Security = () => {
   );
   const [answer, setAnswer] = useState("");
   const [forgotPin, setForgotPin] = useState(false);
-  // const [lockApp, setLockApp] = useState(false);
+  const [lockApp, setLockApp] = useState(null);
 
   // Generate a random salt value
   const generateSalt = () => {
@@ -67,11 +66,6 @@ const Security = () => {
   };
 
   const dispatch = useDispatch();
-  const lockApp = useSelector((state) => state.lockApp.lockApp);
-
-  const updateLockApp = (val) => {
-    dispatch(setLockApp(val));
-  };
 
   const handleTogglePassword = () => {
     if (showPassword) {
@@ -110,6 +104,8 @@ const Security = () => {
   useEffect(() => {
     const pinSet = async () => {
       try {
+        const lock = await AsyncStorage.getItem("lockApp");
+        setLockApp(lock == null || lock == "0" ? false : true);
         const pin = await AsyncStorage.getItem("storedPin");
         if (pin == null) setCheckPin(0);
         else {
@@ -298,6 +294,20 @@ const Security = () => {
           autoHide: true,
         });
       }
+    }
+  };
+
+  const updateLock = async () => {
+    try {
+      if (lockApp) {
+        setLockApp(false);
+        await AsyncStorage.setItem("lockApp", "0");
+      } else {
+        setLockApp(true);
+        await AsyncStorage.setItem("lockApp", "1");
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -581,7 +591,7 @@ const Security = () => {
                 thumbColor={lockApp ? "#69c181" : "#f4f3f4"}
                 ios_backgroundColor="#3e3e3e"
                 onValueChange={() => {
-                  updateLockApp(!lockApp);
+                  updateLock();
                 }}
                 value={lockApp}
                 style={{ transform: [{ scaleX: 1.2 }, { scaleY: 1 }] }}

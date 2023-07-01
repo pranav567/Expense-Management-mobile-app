@@ -8,6 +8,7 @@ import {
   Image,
   Keyboard,
 } from "react-native";
+import * as SQLite from "expo-sqlite";
 import { Picker } from "@react-native-picker/picker";
 import Toast from "react-native-toast-message";
 import { useNavigation } from "@react-navigation/native";
@@ -98,6 +99,7 @@ const SecurityPin = () => {
   }, []);
 
   const checkPin = async (fieldLast) => {
+    const db = SQLite.openDatabase("ExpenseManagement.db");
     const pin = field1 + field2 + field3 + fieldLast;
     try {
       let verifyPin = verifyValue(pin, pinStorage, saltStorage);
@@ -108,7 +110,15 @@ const SecurityPin = () => {
         (forgotPin && verifyQuest && verifyAns)
       ) {
         dispatch(setSecurityCode(false));
-        navigation.navigate("Login");
+        let tableExists = false;
+        await checkTableExists(db, "userDetails")
+          .then((res) => {
+            tableExists = res;
+          })
+          .catch((err) => {});
+
+        if (tableExists) navigation.navigate("Login");
+        else navigation.navigate("Register");
       } else {
         setField1("");
         setField2("");

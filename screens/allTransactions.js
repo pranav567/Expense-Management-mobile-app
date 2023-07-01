@@ -31,6 +31,7 @@ import { useSelector, useDispatch } from "react-redux";
 import store, { setTransactionModal } from "../store";
 import { getTransactions } from "../queries";
 import { Ionicons } from "@expo/vector-icons";
+import LogoutModal from "../components/logoutModal";
 
 const AllTransactions = ({ navigation }) => {
   const db = SQLite.openDatabase("ExpenseManagement.db");
@@ -43,6 +44,7 @@ const AllTransactions = ({ navigation }) => {
   const transactionModal = useSelector(
     (state) => state.transactionModal.transactionModal
   );
+  const logoutModal = useSelector((state) => state.logoutModal.logoutModal);
 
   const getFormattedDate = (dateObj) => {
     const transactionDate = new Date(dateObj);
@@ -342,6 +344,7 @@ const AllTransactions = ({ navigation }) => {
         </View>
         <BottomNavigator buttonActive="none" />
         {transactionModal !== null ? <TransactionModal /> : <></>}
+        {logoutModal ? <LogoutModal /> : <></>}
       </View>
     </>
   );
