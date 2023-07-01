@@ -501,9 +501,9 @@ const AddTransaction = ({ navigation }) => {
                     if (cardsList.length > 0) {
                       setToObj(cardsList[0].cardNum.toString());
                     } else {
-                      setToObj("-2");
+                      setToObj("-1");
                     }
-                    setFromObj("-1");
+                    setFromObj("-2");
                     setTransactionType("Received");
                   }
                 }}
@@ -673,84 +673,7 @@ const AddTransaction = ({ navigation }) => {
                 </Picker>
               </View>
 
-              {/* <View style={styles.rcvdField1}>
-                <Text style={{ fontSize: 18, color: "#393e46" }}>
-                  Unnecessary Expenditure{" "}
-                  <Text style={{ color: "#E49393" }}>*</Text>{" "}
-                </Text>
-                <View style={styles.radioChoice1}>
-                  <TouchableOpacity
-                    style={[
-                      styles.radioButton,
-                      unnecessary === "Yes" && styles.radioButtonSelected,
-                    ]}
-                    onPress={() => {
-                      if (unnecessary === "Yes") setUnnecessary(null);
-                      else setUnnecessary("Yes");
-                    }}
-                  >
-                    {unnecessary === "Yes" && (
-                      <View style={styles.radioButtonInner} />
-                    )}
-                  </TouchableOpacity>
-                  <Text style={{ marginRight: 15 }}>Yes</Text>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.radioButton,
-                      unnecessary === "No" && styles.radioButtonSelected,
-                    ]}
-                    onPress={() => {
-                      if (unnecessary === "No") setUnnecessary(null);
-                      else setUnnecessary("No");
-                    }}
-                  >
-                    {unnecessary === "No" && (
-                      <View style={styles.radioButtonInner} />
-                    )}
-                  </TouchableOpacity>
-                  <Text style={{ marginRight: 15 }}>No</Text>
-                </View>
-              </View>
-              <View style={styles.rcvdField1}>
-                <Text style={{ fontSize: 18, color: "#393e46" }}>
-                  Recurring Expenditure{" "}
-                  <Text style={{ color: "#E49393" }}>*</Text>{" "}
-                </Text>
-                <View style={styles.radioChoice1}>
-                  <TouchableOpacity
-                    style={[
-                      styles.radioButton,
-                      recurring === "Yes" && styles.radioButtonSelected,
-                    ]}
-                    onPress={() => {
-                      if (recurring === "Yes") setRecurring(null);
-                      else setRecurring("Yes");
-                    }}
-                  >
-                    {recurring === "Yes" && (
-                      <View style={styles.radioButtonInner} />
-                    )}
-                  </TouchableOpacity>
-                  <Text style={{ marginRight: 15 }}>Yes</Text>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.radioButton,
-                      recurring === "No" && styles.radioButtonSelected,
-                    ]}
-                    onPress={() => {
-                      if (recurring === "No") setRecurring(null);
-                      else setRecurring("No");
-                    }}
-                  >
-                    {recurring === "No" && (
-                      <View style={styles.radioButtonInner} />
-                    )}
-                  </TouchableOpacity>
-                  <Text style={{ marginRight: 15 }}>No</Text>
-                </View>
-              </View> */}
+              
             </>
           ) : transactionType == "Internal Transfer" ? (
             <>
