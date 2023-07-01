@@ -23,14 +23,13 @@ import {
   getSaltAndId,
   loginUsingCreds,
 } from "../queries";
-import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 const Login = ({ navigation }) => {
   const securityCode = useSelector((state) => state.securityCode.securityCode);
   const dispatch = useDispatch();
 
-  const [username, setUsername] = useState("pranavpn7@gmail.com");
-  const [password, setPassword] = useState("123");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [validPassword, setValidPassword] = useState(false);
 

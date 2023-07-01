@@ -19,6 +19,8 @@ const LandingScreen = ({ navigation }) => {
     try {
       const db = SQLite.openDatabase("ExpenseManagement.db");
       // await deleteAllTables(db);
+      // await AsyncStorage.removeItem("storedPin");
+      // await AsyncStorage.removeItem("lockApp");
       const pin = await AsyncStorage.getItem("storedPin");
       const lockApp = await AsyncStorage.getItem("lockApp");
       if (pin == null || lockApp == null || lockApp == "0") {

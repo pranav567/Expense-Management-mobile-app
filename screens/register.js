@@ -27,13 +27,13 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Register = ({ navigation }) => {
-  const [name, setName] = useState("Panda");
-  const [password, setPassword] = useState("123");
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [confirmPassword, setConfirmPassword] = useState("123");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [validPassword, setValidPassword] = useState(false);
-  const [email, setEmail] = useState("pranavpn7@gmail.com");
+  const [email, setEmail] = useState("");
 
   const verifyEmail = () => {
     //to be done later using mailgun

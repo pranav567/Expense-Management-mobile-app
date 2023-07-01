@@ -797,12 +797,18 @@ export const getCardId = async (db, userId, fromId, toId) => {
         "SELECT uniqueId from cardDetails where userId=? AND cardNum =?",
         [userId, fromId],
         (_, result) => {
-          let fromUnique = result.rows.item(0).uniqueId;
+          let fromUnique =
+            result.rows.item(0) == undefined
+              ? ""
+              : result.rows.item(0).uniqueId;
           tx.executeSql(
             "SELECT uniqueId from cardDetails where userId=? AND cardNum =?",
             [userId, toId],
             (_, result) => {
-              let toUnique = result.rows.item(0).uniqueId;
+              let toUnique =
+                result.rows.item(0) == undefined
+                  ? ""
+                  : result.rows.item(0).uniqueId;
               resolve({ fromUnique, toUnique });
             },
             (_, error) => {
